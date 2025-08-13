@@ -7,4 +7,4 @@ This project is part of a larger personal portfolio experience inspired by the "
 
 ## Features 
 - **Blender-modeled environment** imported as `.glb` into Three.js.
-- **Interactive toy car** (
+- **Interactive toy car** 
