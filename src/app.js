@@ -9,6 +9,8 @@ import room from './objects/room'
 
 import { backgroundLight} from './scene/lights'
 
+import { setupCarControls } from './systems/events'
+
 export async function setUpScene() {
    addWindowResizeEventListener(camera, renderer);
 
@@ -24,12 +26,12 @@ export async function setUpScene() {
    scene.add(gridHelper);
 
    const roomModel = await room;
-
-   const carObject = new Car();
-   const carModel = await carObject.load();
+   const car = new Car();
+   await car.load()
 
    scene.add(roomModel);
-   scene.add(carModel);
+   scene.add(car.model);
+   setupCarControls(car);
 
    animate(scene, camera, controls, renderer);
 };
