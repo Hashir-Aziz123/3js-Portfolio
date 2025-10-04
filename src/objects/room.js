@@ -6,7 +6,7 @@ const textureLoader = new THREE.TextureLoader();
 
 const room = new Promise((resolve, reject) =>{
     gltfLoader.load(
-        '../../assets/models/cleaned_portfolio_model_2.glb',
+        '../../assets/models/cleaned_portfolio_model_3.glb',
         (gltf) => {
             const roomScene = gltf.scene;
             roomScene.position.set(0, 0, 0);
@@ -14,7 +14,7 @@ const room = new Promise((resolve, reject) =>{
             const mesh = roomScene.getObjectByName('room_floor');
             
             if (mesh) {
-                const normalMap = textureLoader.load('../../assets/textures/floor_normal.png');
+                const normalMap = textureLoader.load('../../assets/textures/floor_diffuse_v4.png');
                 normalMap.encoding = THREE.LinearEncoding;
 
                 mesh.material.normalMap = normalMap;
