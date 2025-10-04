@@ -11,6 +11,11 @@ import { backgroundLight } from './scene/lights';
 import { addCarMovementEventListener, disposeKeyboardControls, inputState } from './systems/events';
 import animate from './systems/animate';
 
+// Interactions
+import { createGroup } from './utils/createGroup';           
+import InteractionManager from './systems/interactions/interactionManager';
+import onPrinterClick from './systems/interactions/printerEvent';
+
 export async function setUpScene() {
     // Adding all event listeners
     addWindowResizeEventListener(camera, renderer);
@@ -34,6 +39,30 @@ export async function setUpScene() {
     scene.add(roomModel);
     scene.add(car.model);
 
+    // For debugging: print the room model hierarchy to console
+    console.log('Room model hierarchy:');
+    roomModel.traverse(obj => {
+    console.log(obj.name, obj.type);
+    });
+
+
+    // Setting up interactions
+    const interaction = new InteractionManager(scene, camera, renderer.domElement);
+
+    const printerGroup = createGroup(roomModel, "printer", [
+        "printer_body",
+        "printer_screen",
+        "printer_buttons",
+        "printer_tray"
+    ]);
+    if (printerGroup) {
+        interaction.register(printerGroup.name, onPrinterClick);
+        console.log('Registered printer group:', printerGroup);
+    } else {
+    console.warn("Printer not found!");
+    }
+
+
     animate(scene, camera, controls, renderer, [
         (delta) => handleCarMovement(car, delta)
     ]);
@@ -50,3 +79,6 @@ function addWindowResizeEventListener(camera, renderer) {
         renderer.setSize(window.innerWidth, window.innerHeight);
     });
 }
+
+
+
