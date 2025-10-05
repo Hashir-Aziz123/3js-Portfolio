@@ -1,0 +1,32 @@
+#contactCard {
+    position: fixed;
+    top:50%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(0.95);
+    background: rgba(20, 20, 20, 0.95);
+    color: #fff;
+    border-radius: 16px;
+    padding: 20px 28px;
+    text-align: center;
+    z-index: 999;
+    box-shadow: 0 0 30px rgba(0, 0, 0, 0.6);
+    transition: opacity 0.3s ease, transform 0.3s ease;
+    font-family: 'Inter', sans-serif;
+
+}
+
+#contactCard.hidden {
+  opacity: 0;
+  pointer-events: none;
+  transform: translate(-50%, -45%) scale(0.9);
+}
+
+#contactCard a {
+  color: #66b3ff;
+  text-decoration: none;
+  font-size: 15px;
+}
+
+#contactCard a:hover {
+  text-decoration: underline;
+}

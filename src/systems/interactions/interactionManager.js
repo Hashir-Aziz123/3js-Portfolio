@@ -1,100 +1,166 @@
-// src/systems/interactionManager.js
 import * as THREE from 'three';
 
 export default class InteractionManager {
-
   constructor(scene, camera, domElement) {
     this.scene = scene;
     this.camera = camera;
     this.domElement = domElement || window;
 
     this.raycaster = new THREE.Raycaster();
-    this.mouse = new THREE.Vector2();
+    this.mousePosition = new THREE.Vector2();
 
-    // registry: name -> { object, handler }
-    this.registry = new Map();
+    // Store registered objects: uuid -> { object, handler }
+    this.interactiveObjects = new Map();
 
-    this._onClick = this._onClick.bind(this);
-    this.domElement.addEventListener('click', this._onClick, { passive: true });
+    // Bind and attach click listener
+    this.handleClick = this.handleClick.bind(this);
+    this.domElement.addEventListener('click', this.handleClick, { passive: true });
   }
 
-  /**
-   * Register an object by its Blender name (must exist in scene) and a handler function.
-   * handler will be called as handler(ctx) where ctx = { object, point, event }
-   */
-  register(name, handler) {
-    if (typeof handler !== 'function') {
-      console.warn('[InteractionManager] handler must be a function');
+  register(objectName, clickHandler) {
+    if (!this.isValidHandler(clickHandler)) {
+      console.warn('[InteractionManager] Click handler must be a function');
       return;
     }
 
-    const obj = this.scene.getObjectByName(name);
-    if (!obj) {
-      console.warn(`[InteractionManager] object named "${name}" not found in scene`);
+    const sceneObject = this.findObjectInScene(objectName);
+    if (!sceneObject) {
+      console.warn(`[InteractionManager] Object "${objectName}" not found in scene`);
       return;
     }
 
-    this.registry.set(obj.uuid  , { object: obj, handler });
-    console.log(`[InteractionManager] registered "${name}"`);   
+    this.interactiveObjects.set(sceneObject.uuid, {
+      object: sceneObject,
+      handler: clickHandler
+    });
+
+    console.log(`[InteractionManager] Registered "${objectName}" for clicks`);
   }
 
-  unregister(name) {
-    const obj = this.scene.getObjectByName(name);
-    if (!obj) return;
-    this.registry.delete(obj.uuid);
+  unregister(objectName) {
+    const sceneObject = this.findObjectInScene(objectName);
+    if (sceneObject) {
+      this.interactiveObjects.delete(sceneObject.uuid);
+    }
   }
 
   dispose() {
-    this.domElement.removeEventListener('click', this._onClick);
-    this.registry.clear();
+    this.domElement.removeEventListener('click', this.handleClick);
+    this.interactiveObjects.clear();
   }
 
-  // -------- internal --------
-  _onClick(event) {
-    // normalized device coords
-    const rect = this.domElement.getBoundingClientRect
-      ? this.domElement.getBoundingClientRect()
-      : { left: 0, top: 0, width: window.innerWidth, height: window.innerHeight };
+  // ============ Private Methods ============
 
-    this.mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
-    this.mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+  handleClick(event) {
+    this.updateMousePosition(event);
+    this.castRayFromMouse();
 
-    this.raycaster.setFromCamera(this.mouse, this.camera);
+    const clickedObject = this.findClickedInteractiveObject();
+    if (clickedObject) {
+      this.executeClickHandler(clickedObject, event);
+    }
+  }
 
-    // gather registered objects for raycast
-    const targets = Array.from(this.registry.values()).map(e => e.object);
-    if (targets.length === 0) return;
+  updateMousePosition(event) {
+    const bounds = this.getElementBounds();
 
-    const intersects = this.raycaster.intersectObjects(targets, true);
-    if (!intersects.length) return;
+    this.mousePosition.x = ((event.clientX - bounds.left) / bounds.width) * 2 - 1;
+    this.mousePosition.y = -((event.clientY - bounds.top) / bounds.height) * 2 + 1;
+  }
 
-    // find the registered parent for the hit mesh
-    const top = intersects[0];
-    const registered = this._findRegisteredParent(top.object);
-    if (!registered) return;
+  getElementBounds() {
+    if (this.domElement.getBoundingClientRect) {
+      return this.domElement.getBoundingClientRect();
+    }
 
-    const entry = this.registry.get(registered.uuid);
-    if (!entry || typeof entry.handler !== 'function') return;
+    // Fallback for window object
+    return {
+      left: 0,
+      top: 0,
+      width: window.innerWidth,
+      height: window.innerHeight
+    };
+  }
 
-    const ctx = {
-      object: registered,
-      point: top.point,
-      face: top.face,
-      uv: top.uv,
-      distance: top.distance,
-      event
+  castRayFromMouse() {
+    this.raycaster.setFromCamera(this.mousePosition, this.camera);
+  }
+
+  findClickedInteractiveObject() {
+    const registeredObjects = this.getAllRegisteredObjects();
+    if (registeredObjects.length === 0) {
+      return null;
+    }
+
+    // Check ray intersections (recursive = true to check children)
+    const intersections = this.raycaster.intersectObjects(registeredObjects, true);
+    if (intersections.length === 0) {
+      return null;
+    }
+
+    // Get the closest intersection
+    const closestHit = intersections[0];
+
+    // Find which registered parent was clicked (clicked mesh might be a child)
+    const registeredParent = this.findRegisteredParent(closestHit.object);
+    if (!registeredParent) {
+      return null;
+    }
+
+    return {
+      registeredObject: registeredParent,
+      intersectionData: closestHit
+    };
+  }
+
+  findRegisteredParent(clickedMesh) {
+    let currentNode = clickedMesh;
+
+    while (currentNode) {
+      if (this.interactiveObjects.has(currentNode.uuid)) {
+        return currentNode;
+      }
+      currentNode = currentNode.parent;
+    }
+
+    return null;
+  }
+
+  executeClickHandler(clickedObject, event) {
+    const { registeredObject, intersectionData } = clickedObject;
+    const registration = this.interactiveObjects.get(registeredObject.uuid);
+
+    if (!registration || !this.isValidHandler(registration.handler)) {
+      return;
+    }
+
+    // Build context object for the handler
+    const clickContext = {
+      object: registeredObject,
+      point: intersectionData.point,
+      face: intersectionData.face,
+      uv: intersectionData.uv,
+      distance: intersectionData.distance,
+      event: event
     };
 
-    try { entry.handler(ctx); }
-    catch (err) { console.error('[InteractionManager] handler error:', err); }
+    // Call the handler with error protection
+    try {
+      registration.handler(clickContext);
+    } catch (error) {
+      console.error('[InteractionManager] Error in click handler:', error);
+    }
   }
 
-  _findRegisteredParent(mesh) {
-    let node = mesh;
-    while (node) {
-      if (this.registry.has(node.uuid)) return node;
-      node = node.parent;
-    }
-    return null;
+  getAllRegisteredObjects() {
+    return Array.from(this.interactiveObjects.values()).map(entry => entry.object);
+  }
+
+  findObjectInScene(objectName) {
+    return this.scene.getObjectByName(objectName);
+  }
+
+  isValidHandler(handler) {
+    return typeof handler === 'function';
   }
 }

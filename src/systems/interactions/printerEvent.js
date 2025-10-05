@@ -1,5 +1,5 @@
 // minimal: play tiny animation if present, then download a PDF
-export default function onPrinterClick({ object }) {
+export default function onPrinterClick() {
 
   const link = document.createElement('a');
   link.href = '../../../assets/PDFs/Hashir_Resume.pdf'; // set correct path

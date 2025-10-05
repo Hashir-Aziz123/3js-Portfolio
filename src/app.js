@@ -14,7 +14,10 @@ import animate from './systems/animate';
 // Interactions
 import { createGroup } from './utils/createGroup';           
 import InteractionManager from './systems/interactions/interactionManager';
+
 import onPrinterClick from './systems/interactions/printerEvent';
+import onPhoneClick from './systems/interactions/phoneEvent';
+import onPcClick from './systems/interactions/laptopInteraction';
 
 export async function setUpScene() {
     // Adding all event listeners
@@ -62,6 +65,29 @@ export async function setUpScene() {
     console.warn("Printer not found!");
     }
 
+    const phoneGroup = createGroup(roomModel, "phone", [
+        "telephone_body",
+        "telephone_miscellaneous",
+        "telephone_receiver",
+    ]);
+    if (phoneGroup) {
+        interaction.register(phoneGroup.name, onPhoneClick);
+        console.log('Registered phone group:', phoneGroup);
+    } else {
+        console.warn("Phone not found!");
+    }
+
+    const laptopGroup = createGroup(roomModel, "laptop", [
+        "laptop",
+    ]);
+    if (laptopGroup) {
+        interaction.register(laptopGroup.name, () => onPcClick({ camera, controls }));
+        console.log('Registered laptop group:', laptopGroup);
+    } else {
+        console.warn("Laptop not found!");
+    }
+
+    // Start animation loop
 
     animate(scene, camera, controls, renderer, [
         (delta) => handleCarMovement(car, delta)
