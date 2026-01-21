@@ -11,6 +11,8 @@ const room = new Promise((resolve, reject) =>{
             const roomScene = gltf.scene;
             roomScene.position.set(0, 0, 0);
 
+            setupRoomShadows(roomScene);
+
             const mesh = roomScene.getObjectByName('room_floor');
             
             if (mesh) {
@@ -59,46 +61,78 @@ const room = new Promise((resolve, reject) =>{
     );
 });
 
-function updateFootballShadow(roomScene) {
+function setupRoomShadows(roomScene) {
     roomScene.traverse((child) => {
-        if (child.isMesh && child.name.toLowerCase().includes('soccer') ) {
-            console.log("Found Football:", child.name);
-
-            child.castShadow = false;
-            const shadowPlane = createFakeShadow();
-            shadowPlane.position.y = 0.02;
-            child.add(shadowPlane);
+        if (child.isMesh) {
+            if (!child.material.isMeshStandardMaterial) {
+                console.log(`Upgrading material for: ${child.name}`);
+                const oldMat = child.material;
+            
+                // Create a new Standard material preserving the old texture/color
+                child.material = new THREE.MeshStandardMaterial({
+                    map: oldMat.map,
+                    color: oldMat.color,
+                    transparent: oldMat.transparent,
+                    opacity: oldMat.opacity,
+                    side: oldMat.side || THREE.FrontSide,
+                    roughness: 1.0, 
+                    metalness: 0.0
+                });
+            }
+            // Furniture, Walls, Floor
+            else {
+                child.castShadow = true;
+                child.receiveShadow = true;
+                
+                // Fix wall striping
+                if (child.material) {
+                    child.material.shadowSide = THREE.BackSide;
+                }
+            }
         }
     });
 }
 
-function createFakeShadow() {
-    const canvas = document.createElement('canvas');
-    canvas.width = 128;
-    canvas.height = 128;
-    const context = canvas.getContext('2d');
-    
-    const gradient = context.createRadialGradient(
-        64, 64, 0,
-        64, 64, 64
-    );
-    gradient.addColorStop(0, 'rgba(0, 0, 0, 0.6)');
-    gradient.addColorStop(1, 'rgba(0, 0, 0, 0)');
-    
-    context.fillStyle = gradient;
-    context.fillRect(0, 0, 128, 128);
+// function updateFootballShadow(roomScene) {
+//     roomScene.traverse((child) => {
+//         if (child.isMesh && child.name.toLowerCase().includes('soccer') ) {
+//             console.log("Found Football:", child.name);
 
-    const shadowTexture = new THREE.CanvasTexture(canvas);
-    const shadowGeometry = new THREE.PlaneGeometry(0.8, 0.8);
-    const shadowMaterial = new THREE.MeshBasicMaterial({
-        map: shadowTexture,
-        transparent: true,
-        depthWrite: false,
-    });
+//             child.castShadow = false;
+//             const shadowPlane = createFakeShadow();
+//             shadowPlane.position.y = 0.02;
+//             child.add(shadowPlane);
+//         }
+//     });
+// }
 
-    const plane = new THREE.Mesh(shadowGeometry, shadowMaterial);
-    plane.rotation.x = -Math.PI / 2;
-    return plane;
-}
+// function createFakeShadow() {
+//     const canvas = document.createElement('canvas');
+//     canvas.width = 128;
+//     canvas.height = 128;
+//     const context = canvas.getContext('2d');
+    
+//     const gradient = context.createRadialGradient(
+//         64, 64, 0,
+//         64, 64, 64
+//     );
+//     gradient.addColorStop(0, 'rgba(0, 0, 0, 0.6)');
+//     gradient.addColorStop(1, 'rgba(0, 0, 0, 0)');
+    
+//     context.fillStyle = gradient;
+//     context.fillRect(0, 0, 128, 128);
+
+//     const shadowTexture = new THREE.CanvasTexture(canvas);
+//     const shadowGeometry = new THREE.PlaneGeometry(0.8, 0.8);
+//     const shadowMaterial = new THREE.MeshBasicMaterial({
+//         map: shadowTexture,
+//         transparent: true,
+//         depthWrite: false,
+//     });
+
+//     const plane = new THREE.Mesh(shadowGeometry, shadowMaterial);
+//     plane.rotation.x = -Math.PI / 2;
+//     return plane;
+// }
 
 export default room;
