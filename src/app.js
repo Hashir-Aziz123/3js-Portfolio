@@ -7,7 +7,7 @@ import renderer from './scene/renderer';
 import Car from './objects/car';
 import room from './objects/room';
 
-import { backgroundLight } from './scene/lights';
+import { backgroundLight, moonLight, lampLight, moonLightTarget } from './scene/lights';
 import { addCarMovementEventListener, disposeKeyboardControls, inputState } from './systems/events';
 import animate from './systems/animate';
 
@@ -27,11 +27,28 @@ export async function setUpScene() {
     const scene = new THREE.Scene();
     scene.background = new THREE.Color(0x000000);
 
+    // Adding lights
     scene.add(backgroundLight);
+    scene.add(moonLight);
+    scene.add(lampLight);
+    scene.add(moonLightTarget);
 
+    // Adding light helpers for debugging
+    // const moonHelper = new THREE.DirectionalLightHelper(moonLight, 1);
+    // scene.add(moonHelper);
+    // const lampHelper = new THREE.PointLightHelper(lampLight, 0.2);
+    // scene.add(lampHelper);
+
+    // const shadowHelper1 = new THREE.CameraHelper(moonLight.shadow.camera);
+    // scene.add(shadowHelper1);
+
+    // const shadowHelper2 = new THREE.CameraHelper(lampLight.shadow.camera);
+    
+    
+
+    // Axes Helpers
     const axesHelper = new THREE.AxesHelper(5);
     scene.add(axesHelper);
-
     const gridHelper = new THREE.GridHelper(10, 10);
     scene.add(gridHelper);
 

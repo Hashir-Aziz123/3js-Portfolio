@@ -1,0 +1,1414 @@
+This file is a merged representation of the entire codebase, combined into a single document by Repomix.
+
+<file_summary>
+This section contains a summary of this file.
+
+<purpose>
+This file contains a packed representation of the entire repository's contents.
+It is designed to be easily consumable by AI systems for analysis, code review,
+or other automated processes.
+</purpose>
+
+<file_format>
+The content is organized as follows:
+1. This summary section
+2. Repository information
+3. Directory structure
+4. Repository files (if enabled)
+5. Multiple file entries, each consisting of:
+  - File path as an attribute
+  - Full contents of the file
+</file_format>
+
+<usage_guidelines>
+- This file should be treated as read-only. Any changes should be made to the
+  original repository files, not this packed version.
+- When processing this file, use the file path to distinguish
+  between different files in the repository.
+- Be aware that this file may contain sensitive information. Handle it with
+  the same level of security as you would the original repository.
+</usage_guidelines>
+
+<notes>
+- Some files may have been excluded based on .gitignore rules and Repomix's configuration
+- Binary files are not included in this packed representation. Please refer to the Repository Structure section for a complete list of file paths, including binary files
+- Files matching patterns in .gitignore are excluded
+- Files matching default ignore patterns are excluded
+- Files are sorted by Git change count (files with more changes are at the bottom)
+</notes>
+
+</file_summary>
+
+<directory_structure>
+.gitignore
+assets/models/Blends/Bed.blend
+assets/models/Blends/BedKing.blend
+assets/models/Blends/BookCase.blend
+assets/models/Blends/BookCaseBooks.blend
+assets/models/Blends/BookCaseLarge.blend
+assets/models/Blends/BookCaseLargeBooks.blend
+assets/models/Blends/Chair.blend
+assets/models/Blends/ChairCushioned.blend
+assets/models/Blends/ChairHandle.blend
+assets/models/Blends/Closet.blend
+assets/models/Blends/Closet2.blend
+assets/models/Blends/Coffee Table 2.blend
+assets/models/Blends/CoffeeTable.blend
+assets/models/Blends/Lamp.blend
+assets/models/Blends/Lamp2.blend
+assets/models/Blends/Plant.blend
+assets/models/Blends/Sofa.blend
+assets/models/Blends/SofaDouble.blend
+assets/models/Blends/SofaLong.blend
+assets/models/Blends/Stool.blend
+assets/models/Blends/Table.blend
+assets/models/Blends/Vase.blend
+assets/models/Blends/Vase2.blend
+assets/models/car_model.glb
+assets/models/cleaned_portfolio_model_2.glb
+assets/models/cleaned_portfolio_model_3.glb
+assets/PDFs/resume.pdf
+assets/textures/01-wsu-css-cheatsheet.jpg
+assets/textures/be-not-afraid-564804.png
+assets/textures/continuum-773674.png
+assets/textures/CSS3-browser-support.png
+assets/textures/express-delivery-650791.png
+assets/textures/firewatch-670316.png
+assets/textures/floor_diffuse_v4.png
+assets/textures/floor_diffuse.png
+assets/textures/floor_normal.png
+assets/textures/ghibli-environment-785106.png
+assets/textures/lightpost-358952.png
+assets/textures/mountain-lake-406093.png
+assets/textures/mountains-835649.png
+assets/textures/note texture resized.jpg
+assets/textures/ohghi984-435610.png
+assets/textures/out-of-the-bus-386760.png
+assets/textures/paperboard-texture.jpg
+assets/textures/purple-skies-951367.png
+assets/textures/stylish-flat-world-map.jpg
+assets/textures/whale-fall-978918.png
+assets/textures/wood_floor_4k.blend
+assets/textures/wood_floor_diff_4k.jpg
+assets/textures/wood_floor_disp_4k.png
+assets/textures/wood_floor_nor_gl_4k.exr
+assets/textures/wood_floor_rough_4k.exr
+html/contactCard.css
+html/contactCard.html
+index.html
+main.js
+package.json
+public/vite.svg
+README.md
+src/app.js
+src/objects/car.js
+src/objects/room.js
+src/objects/testObjects.js
+src/scene/camera.js
+src/scene/controls.js
+src/scene/environment.js
+src/scene/lights.js
+src/scene/renderer.js
+src/systems/animate.js
+src/systems/collision.js
+src/systems/events.js
+src/systems/interactions/interactionManager.js
+src/systems/interactions/laptopInteraction.js
+src/systems/interactions/phoneEvent.js
+src/systems/interactions/printerEvent.js
+src/systems/modelLoader.js
+src/utils/createGroup.js
+styles/style.css
+</directory_structure>
+
+<files>
+This section contains the contents of the repository's files.
+
+<file path=".gitignore">
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+node_modules
+dist
+dist-ssr
+*.local
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+</file>
+
+<file path="html/contactCard.css">
+#contactCard {
+    position: fixed;
+    top:50%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(0.95);
+    background: rgba(20, 20, 20, 0.95);
+    color: #fff;
+    border-radius: 16px;
+    padding: 20px 28px;
+    text-align: center;
+    z-index: 999;
+    box-shadow: 0 0 30px rgba(0, 0, 0, 0.6);
+    transition: opacity 0.3s ease, transform 0.3s ease;
+    font-family: 'Inter', sans-serif;
+
+}
+
+#contactCard.hidden {
+  opacity: 0;
+  pointer-events: none;
+  transform: translate(-50%, -45%) scale(0.9);
+}
+
+#contactCard a {
+  color: #66b3ff;
+  text-decoration: none;
+  font-size: 15px;
+}
+
+#contactCard a:hover {
+  text-decoration: underline;
+}
+</file>
+
+<file path="html/contactCard.html">
+<div id="contactCard" class="hidden">
+  <h3>Contact Me</h3>
+  <a href="mailto:hashiraziz@gmail.com">📧 hashiraziz@gmail.com</a><br>
+  <a href="tel:+923334071419">📞 +92 333 4071419</a><br>
+  <a href="https://linkedin.com/in/hashiraziz" target="_blank">🔗 LinkedIn</a>
+</div>
+</file>
+
+<file path="index.html">
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="./styles/style.css" />
+    <title>Three.js Project</title>
+  </head>
+  <body>
+    <div id="app"></div>
+    <script type="module" src="main.js"></script>
+  </body>
+</html>
+</file>
+
+<file path="main.js">
+import './styles/style.css'
+import { setUpScene } from './src/app'
+
+await setUpScene();
+</file>
+
+<file path="package.json">
+{
+  "name": "portfolio",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "devDependencies": {
+    "vite": "^7.0.4"
+  },
+  "dependencies": {
+    "three": "^0.178.0"
+  }
+}
+</file>
+
+<file path="public/vite.svg">
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" aria-hidden="true" role="img" class="iconify iconify--logos" width="31.88" height="32" preserveAspectRatio="xMidYMid meet" viewBox="0 0 256 257"><defs><linearGradient id="IconifyId1813088fe1fbc01fb466" x1="-.828%" x2="57.636%" y1="7.652%" y2="78.411%"><stop offset="0%" stop-color="#41D1FF"></stop><stop offset="100%" stop-color="#BD34FE"></stop></linearGradient><linearGradient id="IconifyId1813088fe1fbc01fb467" x1="43.376%" x2="50.316%" y1="2.242%" y2="89.03%"><stop offset="0%" stop-color="#FFEA83"></stop><stop offset="8.333%" stop-color="#FFDD35"></stop><stop offset="100%" stop-color="#FFA800"></stop></linearGradient></defs><path fill="url(#IconifyId1813088fe1fbc01fb466)" d="M255.153 37.938L134.897 252.976c-2.483 4.44-8.862 4.466-11.382.048L.875 37.958c-2.746-4.814 1.371-10.646 6.827-9.67l120.385 21.517a6.537 6.537 0 0 0 2.322-.004l117.867-21.483c5.438-.991 9.574 4.796 6.877 9.62Z"></path><path fill="url(#IconifyId1813088fe1fbc01fb467)" d="M185.432.063L96.44 17.501a3.268 3.268 0 0 0-2.634 3.014l-5.474 92.456a3.268 3.268 0 0 0 3.997 3.378l24.777-5.718c2.318-.535 4.413 1.507 3.936 3.838l-7.361 36.047c-.495 2.426 1.782 4.5 4.151 3.78l15.304-4.649c2.372-.72 4.652 1.36 4.15 3.788l-11.698 56.621c-.732 3.542 3.979 5.473 5.943 2.437l1.313-2.028l72.516-144.72c1.215-2.423-.88-5.186-3.54-4.672l-25.505 4.922c-2.396.462-4.435-1.77-3.759-4.114l16.646-57.705c.677-2.35-1.37-4.583-3.769-4.113Z"></path></svg>
+</file>
+
+<file path="src/objects/testObjects.js">
+import * as THREE from 'three';
+import { color } from 'three/tsl';
+
+const testGroup = new THREE.Group();
+
+const testBed = new THREE.Mesh (
+    new THREE.BoxGeometry(3,1,4),
+    new THREE.MeshStandardMaterial({color: 0x00000})
+);
+testBed.translateX(2.5);
+testBed.translateZ(-2);
+testBed.translateY(0.5);
+
+const testTable = new THREE.Mesh(
+    new THREE.BoxGeometry(1, 1.5, 1.5),
+    new THREE.MeshStandardMaterial({color: 0x000ff})
+);
+testTable.translateX(-2.5);
+testTable.translateZ(3);
+testTable.translateY(0.75);
+
+const testWardrobe = new THREE.Mesh(
+    new THREE.BoxGeometry(1, 4, 2.5),
+    new THREE.MeshStandardMaterial({color: 0xff0000 })
+);
+testWardrobe.translateX(-2.5);
+testWardrobe.translateZ(1);
+testWardrobe.translateY(2);
+
+const testDrawers = new THREE.Mesh(
+    new THREE.BoxGeometry(1, 2.5, 1),
+    new THREE.MeshStandardMaterial({color: 0x000ff})
+);
+testDrawers.translateX(-2.5);
+testDrawers.translateZ(-3.5);
+testDrawers.translateY(1.25);
+
+const testDesk = new THREE.Mesh(
+    new THREE.BoxGeometry(1, 1.5, 2.7),
+    new THREE.MeshStandardMaterial({color: 0x008000})
+);
+testDesk.translateX(-2.5);
+testDesk.translateZ(-1.65);
+testDesk.translateY(0.75);
+
+const testTopShelf = new THREE.Mesh(
+    new THREE.BoxGeometry(1, 1, 3),
+    new THREE.MeshStandardMaterial({color: 0xff0000 })
+);
+testTopShelf.translateX(-2.5);
+testTopShelf.translateZ(-1.65);
+testTopShelf.translateY(3);
+testTopShelf.rotateX(-Math.PI/8);
+
+const testWindow = new THREE.Mesh(
+    new THREE.BoxGeometry(2, 2.5, 1),
+    new THREE.MeshStandardMaterial({color: 0xffffff})
+);
+testWindow.translateX(0);
+testWindow.translateZ(-4.25);
+testWindow.translateY(3);
+
+const testSideTable = new THREE.Mesh(
+    new THREE.BoxGeometry(1, 2, 1),
+    new THREE.MeshStandardMaterial({color: 0x000ff})
+);
+testSideTable.translateX(4.5);
+testSideTable.translateZ(-3.5);
+testSideTable.translateY(1);
+
+const testCarpet = new THREE.Mesh(
+    new THREE.BoxGeometry(4,0.25,3),
+    new THREE.MeshStandardMaterial({color: 0xFD9193})
+)
+testCarpet.translateX(2);
+testCarpet.translateZ(2);
+testCarpet.translateY(0.125);
+
+testGroup.add(
+    testBed, testTable, testWardrobe,
+    testDrawers, testDesk, testTopShelf,    
+    testWindow, testSideTable, testCarpet
+);
+
+export default testGroup;
+</file>
+
+<file path="src/scene/camera.js">
+import * as THREE from 'three';
+
+const camera = new THREE.PerspectiveCamera(
+    75 , 
+    window.innerWidth / window.innerHeight,
+    0.1 , 
+    200
+)
+
+camera.position.set( +4.7 , 2.5 , 5.2);
+
+
+export default camera;
+</file>
+
+<file path="src/scene/controls.js">
+import { OrbitControls } from "three/examples/jsm/Addons.js";
+import camera from './camera';
+import renderer from "./renderer";
+
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true;
+
+export default controls;
+</file>
+
+<file path="src/scene/environment.js">
+
+</file>
+
+<file path="src/scene/renderer.js">
+import * as THREE from 'three';
+
+const renderer = new THREE.WebGLRenderer( {antialias: true} );
+renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.setPixelRatio(window.devicePixelRatio);
+
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+
+document.body.appendChild(renderer.domElement);
+
+export default renderer;
+</file>
+
+<file path="src/systems/collision.js">
+import * as THREE from 'three'
+
+class CollisionSystem{
+
+}
+
+// Simple spatial grid for broad-phase collision detection
+class SpatialGrid{
+
+    constructor(cellSize = 50){
+        this.cellSize = cellSize;
+        this.grid= new Map();
+    }
+
+    add(id, position){
+        const key = this._getGridKey(position)
+    }
+
+}
+
+export default CollisionSystem
+</file>
+
+<file path="src/systems/interactions/laptopInteraction.js">
+// systems/events/onPcClick.js
+import * as THREE from 'three';
+
+export default function onPcClick({ camera, controls }) {
+  console.log('💻 PC clicked!');
+
+  // Temporary zoom effect (just moves camera a bit closer)
+  const targetPosition = new THREE.Vector3(0, 1.5, 1); // Adjust based on your scene
+  const duration = 1000; // 1 second animation
+
+  if (!controls || !camera) {
+    console.warn('PC click: Missing camera or controls.');
+    return;
+  }
+
+  const start = {
+    x: camera.position.x,
+    y: camera.position.y,
+    z: camera.position.z,
+  };
+
+  const end = targetPosition.clone();
+  const startTime = performance.now();
+
+  function animate() {
+    const elapsed = performance.now() - startTime;
+    const t = Math.min(elapsed / duration, 1);
+
+    camera.position.lerpVectors(new THREE.Vector3(start.x, start.y, start.z), end, t);
+    controls.update();
+
+    if (t < 1) {
+      requestAnimationFrame(animate);
+    }
+  }
+
+  requestAnimationFrame(animate);
+
+  // Optional: show temporary HTML overlay
+  showPlaceholderUI();
+}
+
+function showPlaceholderUI() {
+  if (document.getElementById('pcUI')) {
+    document.getElementById('pcUI').classList.toggle('hidden');
+    return;
+  }
+
+  const div = document.createElement('div');
+  div.id = 'pcUI';
+  div.innerHTML = `
+    <div style="
+      position: fixed;
+      top: 20%;
+      left: 50%;
+      transform: translateX(-50%);
+      padding: 20px 30px;
+      background: rgba(0,0,0,0.8);
+      color: white;
+      border-radius: 12px;
+      z-index: 9999;
+      font-family: monospace;
+    ">
+      <p>🖥️ Projects UI (Coming Soon)</p>
+      <button id="closePcUI" style="margin-top: 10px;">Close</button>
+    </div>
+  `;
+  document.body.appendChild(div);
+
+  document.getElementById('closePcUI').addEventListener('click', () => {
+    div.remove();
+  });
+}
+</file>
+
+<file path="src/systems/interactions/phoneEvent.js">
+let contactCardLoaded = false;
+
+export default async function onPhoneClick() {
+  console.log('☎ Telephone clicked!');
+
+  if (!contactCardLoaded) {
+    await loadContactCard();
+  }
+
+  // Toggle visibility
+  toggleContactCardVisibility();
+
+}
+
+async function loadContactCard() {
+    const res = await fetch('../../../html/contactCard.html');
+    const html = await res.text();
+    document.body.insertAdjacentHTML('beforeend', html);
+
+    // Load CSS only once
+    if (!document.querySelector('link[href="../../../html/contactCard.css"]')) {
+        const link = document.createElement('link');
+        link.rel = 'stylesheet';
+        link.href = 'html/contactCard.css';
+        document.head.appendChild(link);
+    }
+
+    contactCardLoaded = true;
+}
+
+function toggleContactCardVisibility() {
+      const contactCard = document.getElementById('contactCard');
+      if (!contactCard) return;
+    
+      contactCard.classList.toggle('hidden');
+}
+</file>
+
+<file path="src/systems/modelLoader.js">
+
+</file>
+
+<file path="src/utils/createGroup.js">
+import * as THREE from 'three';
+
+export function createGroup(root, groupName, childNames) {
+  if (!root || !childNames || childNames.length === 0) return null;
+
+  const group = new THREE.Group();
+  group.name = groupName;
+
+  // find and reparent requested objects
+  childNames.forEach(name => {
+    const child = root.getObjectByName(name);
+    if (child) {
+      group.attach(child); // reparent while keeping world transform
+    } else {
+      console.warn(`[createGroup] child "${name}" not found under root`);
+    }
+  });
+
+  if (group.children.length === 0) {
+    console.warn(`[createGroup] No valid children found for group "${groupName}"`);
+    return null;
+  }
+
+  root.add(group);
+  return group;
+}
+</file>
+
+<file path="styles/style.css">
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html,
+body {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  font-family: sans-serif;
+  background-color: #000; 
+}
+
+canvas {
+  display: block;
+}
+</file>
+
+<file path="src/objects/room.js">
+import * as THREE from 'three';
+import { GLTFLoader } from 'three/examples/jsm/Addons.js';
+
+const gltfLoader = new GLTFLoader();
+const textureLoader = new THREE.TextureLoader();
+
+const room = new Promise((resolve, reject) =>{
+    gltfLoader.load(
+        '../../assets/models/cleaned_portfolio_model_3.glb',
+        (gltf) => {
+            const roomScene = gltf.scene;
+            roomScene.position.set(0, 0, 0);
+
+            const mesh = roomScene.getObjectByName('room_floor');
+            
+            if (mesh) {
+                const normalMap = textureLoader.load('../../assets/textures/floor_diffuse_v4.png');
+                normalMap.encoding = THREE.LinearEncoding;
+
+                mesh.material.normalMap = normalMap;
+                mesh.material.normalMapType = THREE.TangentSpaceNormalMap;
+                mesh.material.normalScale.set(1, 1);
+                mesh.material.needsUpdate = true;
+            }   
+            resolve(roomScene);
+        },
+        undefined,
+        (error) => {
+            console.error("Error loading room model: ", error)
+            reject(error);
+        }
+    );
+});
+
+export default room;
+</file>
+
+<file path="src/scene/lights.js">
+import * as THREE from 'three';
+
+const backgroundLight = new THREE.AmbientLight(0xffffff,0.5);
+
+
+export {backgroundLight};
+</file>
+
+<file path="src/systems/animate.js">
+function animate(scene, camera, controls, renderer, updateCallbacks = []) {
+  let prevTime = performance.now();
+
+  function loop(now) {
+    requestAnimationFrame(loop);
+
+    const delta = Math.max(0, (now - prevTime) / 1000); // seconds
+    prevTime = now;
+
+    // run all update callbacks with delta
+    for (let i = 0; i < updateCallbacks.length; i++) {
+      try {
+        updateCallbacks[i](delta, now);
+      } catch (err) {
+        console.error('Error in update callback:', err);
+      }
+    }
+
+    controls.update();
+    renderer.render(scene, camera);
+  }
+
+  // kick off the loop
+  requestAnimationFrame(loop);
+
+  // return a small handle so caller can stop the loop if they want later
+  return {
+    stop() { /* not implemented - left intentionally minimal */ }
+  };
+}
+
+export default animate;
+</file>
+
+<file path="src/systems/interactions/interactionManager.js">
+import * as THREE from 'three';
+
+export default class InteractionManager {
+  constructor(scene, camera, domElement) {
+    this.scene = scene;
+    this.camera = camera;
+    this.domElement = domElement || window;
+
+    this.raycaster = new THREE.Raycaster();
+    this.mousePosition = new THREE.Vector2();
+
+    // Store registered objects: uuid -> { object, handler }
+    this.interactiveObjects = new Map();
+
+    // Bind and attach click listener
+    this.handleClick = this.handleClick.bind(this);
+    this.domElement.addEventListener('click', this.handleClick, { passive: true });
+  }
+
+  register(objectName, clickHandler) {
+    if (!this.isValidHandler(clickHandler)) {
+      console.warn('[InteractionManager] Click handler must be a function');
+      return;
+    }
+
+    const sceneObject = this.findObjectInScene(objectName);
+    if (!sceneObject) {
+      console.warn(`[InteractionManager] Object "${objectName}" not found in scene`);
+      return;
+    }
+
+    this.interactiveObjects.set(sceneObject.uuid, {
+      object: sceneObject,
+      handler: clickHandler
+    });
+
+    console.log(`[InteractionManager] Registered "${objectName}" for clicks`);
+  }
+
+  unregister(objectName) {
+    const sceneObject = this.findObjectInScene(objectName);
+    if (sceneObject) {
+      this.interactiveObjects.delete(sceneObject.uuid);
+    }
+  }
+
+  dispose() {
+    this.domElement.removeEventListener('click', this.handleClick);
+    this.interactiveObjects.clear();
+  }
+
+  // ============ Private Methods ============
+
+  handleClick(event) {
+    this.updateMousePosition(event);
+    this.castRayFromMouse();
+
+    const clickedObject = this.findClickedInteractiveObject();
+    if (clickedObject) {
+      this.executeClickHandler(clickedObject, event);
+    }
+  }
+
+  updateMousePosition(event) {
+    const bounds = this.getElementBounds();
+
+    this.mousePosition.x = ((event.clientX - bounds.left) / bounds.width) * 2 - 1;
+    this.mousePosition.y = -((event.clientY - bounds.top) / bounds.height) * 2 + 1;
+  }
+
+  getElementBounds() {
+    if (this.domElement.getBoundingClientRect) {
+      return this.domElement.getBoundingClientRect();
+    }
+
+    // Fallback for window object
+    return {
+      left: 0,
+      top: 0,
+      width: window.innerWidth,
+      height: window.innerHeight
+    };
+  }
+
+  castRayFromMouse() {
+    this.raycaster.setFromCamera(this.mousePosition, this.camera);
+  }
+
+  findClickedInteractiveObject() {
+    const registeredObjects = this.getAllRegisteredObjects();
+    if (registeredObjects.length === 0) {
+      return null;
+    }
+
+    // Check ray intersections (recursive = true to check children)
+    const intersections = this.raycaster.intersectObjects(registeredObjects, true);
+    if (intersections.length === 0) {
+      return null;
+    }
+
+    // Get the closest intersection
+    const closestHit = intersections[0];
+
+    // Find which registered parent was clicked (clicked mesh might be a child)
+    const registeredParent = this.findRegisteredParent(closestHit.object);
+    if (!registeredParent) {
+      return null;
+    }
+
+    return {
+      registeredObject: registeredParent,
+      intersectionData: closestHit
+    };
+  }
+
+  findRegisteredParent(clickedMesh) {
+    let currentNode = clickedMesh;
+
+    while (currentNode) {
+      if (this.interactiveObjects.has(currentNode.uuid)) {
+        return currentNode;
+      }
+      currentNode = currentNode.parent;
+    }
+
+    return null;
+  }
+
+  executeClickHandler(clickedObject, event) {
+    const { registeredObject, intersectionData } = clickedObject;
+    const registration = this.interactiveObjects.get(registeredObject.uuid);
+
+    if (!registration || !this.isValidHandler(registration.handler)) {
+      return;
+    }
+
+    // Build context object for the handler
+    const clickContext = {
+      object: registeredObject,
+      point: intersectionData.point,
+      face: intersectionData.face,
+      uv: intersectionData.uv,
+      distance: intersectionData.distance,
+      event: event
+    };
+
+    // Call the handler with error protection
+    try {
+      registration.handler(clickContext);
+    } catch (error) {
+      console.error('[InteractionManager] Error in click handler:', error);
+    }
+  }
+
+  getAllRegisteredObjects() {
+    return Array.from(this.interactiveObjects.values()).map(entry => entry.object);
+  }
+
+  findObjectInScene(objectName) {
+    return this.scene.getObjectByName(objectName);
+  }
+
+  isValidHandler(handler) {
+    return typeof handler === 'function';
+  }
+}
+</file>
+
+<file path="src/systems/interactions/printerEvent.js">
+// minimal: play tiny animation if present, then download a PDF
+export default function onPrinterClick() {
+
+  const link = document.createElement('a');
+  link.href = '../../../assets/PDFs/Hashir_Resume.pdf'; // set correct path
+  link.download = 'resume.pdf';
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+}
+</file>
+
+<file path="README.md">
+# 3D Interactive Portfolio
+
+A fully immersive 3D interactive portfolio experience built with **Three.js**, featuring a carefully crafted room environment with interactive objects and dynamic systems. This project showcases web development skills through creative use of 3D graphics, physics simulation, and modern JavaScript architecture.
+
+## 📋 Table of Contents
+- [Overview](#overview)
+- [Features](#features)
+- [Project Structure](#project-structure)
+- [Technologies](#technologies)
+- [Installation](#installation)
+- [Usage](#usage)
+- [Architecture](#architecture)
+- [Interactive Elements](#interactive-elements)
+- [Development](#development)
+- [Performance Considerations](#performance-considerations)
+
+## 🎯 Overview
+
+This project combines artistic 3D modeling with interactive web technologies to create an engaging portfolio experience. The scene features a photorealistic room environment with carefully positioned objects, realistic lighting, and smooth animations. Users can interact with various elements like a laptop, phone, printer, and movable car to explore different aspects of the portfolio.
+
+The project is inspired by the "digital bedroom" concept, creating an intimate and memorable way to showcase work and skills.
+
+## ✨ Features
+
+### 3D Environment
+- **Professionally modeled room environment** with realistic proportions and lighting
+- **High-quality textures** including wood floor materials with normal and roughness maps
+- **Atmospheric lighting system** with multiple light sources for realistic rendering
+- **Blender-modeled assets** seamlessly imported into Three.js via `.glb` format
+
+### Interactive Elements
+- **Laptop interaction** - Click to trigger actions related to projects or information
+- **Phone event handling** - Interactive mobile device element
+- **Printer interaction** - Functional interaction point for document viewing
+- **Movable toy car** - Physics-based object that can be controlled and navigated
+- **Collision detection system** - Prevents objects from overlapping and falling through surfaces
+
+### Technical Features
+- **Real-time animation system** for smooth object movement and transitions
+- **Custom camera controls** for scene exploration and navigation
+- **Event-driven architecture** for clean, maintainable interaction handling
+- **Model loading system** for dynamic asset management
+- **Contact card display** - Additional UI for contact information
+
+## 📁 Project Structure
+
+```
+portfolio/
+├── index.html                 # Main HTML entry point
+├── main.js                    # Application bootstrap
+├── package.json               # Project dependencies
+├── README.md                  # This file
+│
+├── assets/                    # Static assets
+│   ├── models/                # 3D model files
+│   │   └── Blends/            # Blender-exported models
+│   ├── PDFs/                  # PDF documents (CV, etc.)
+│   ├── sounds/                # Audio files for interactions
+│   └── textures/              # Texture maps
+│       ├── wood_floor_nor_gl_4k.exr    # Normal map (4K)
+│       └── wood_floor_rough_4k.exr     # Roughness map (4K)
+│
+├── html/                      # Static HTML components
+│   ├── contactCard.html       # Contact information UI
+│   └── contactCard.css        # Contact card styles
+│
+├── public/                    # Public static files
+│
+├── src/                       # Source code
+│   ├── app.js                 # Main application controller
+│   │
+│   ├── objects/               # 3D scene objects
+│   │   ├── car.js             # Interactive car object
+│   │   ├── room.js            # Room environment object
+│   │   └── testObjects.js     # Test and debug objects
+│   │
+│   ├── scene/                 # Core Three.js systems
+│   │   ├── camera.js          # Camera setup and controls
+│   │   ├── controls.js        # User input handling (mouse, keyboard)
+│   │   ├── environment.js      # Scene environment and background
+│   │   ├── lights.js          # Lighting configuration
+│   │   └── renderer.js        # WebGL renderer setup
+│   │
+│   ├── systems/               # Application systems
+│   │   ├── animate.js         # Animation loop and frame updates
+│   │   ├── collision.js       # Physics and collision detection
+│   │   ├── events.js          # Global event dispatcher
+│   │   ├── modelLoader.js     # Asset loading utilities
+│   │   └── interactions/      # Object interaction handlers
+│   │       ├── interactionManager.js    # Central interaction hub
+│   │       ├── laptopInteraction.js     # Laptop click events
+│   │       ├── phoneEvent.js            # Phone interaction logic
+│   │       └── printerEvent.js          # Printer interaction logic
+│   │
+│   └── utils/                 # Utility functions
+│       └── createGroup.js     # Helper for object grouping
+│
+└── styles/                    # CSS stylesheets
+    └── style.css              # Main stylesheet
+```
+
+## 🛠 Technologies
+
+- **Three.js** - 3D graphics library and rendering engine
+- **Blender** - 3D modeling and asset creation
+- **JavaScript (ES6+)** - Core application logic
+- **WebGL** - Graphics rendering
+- **HTML5 & CSS3** - Web interface
+- **Node.js/npm** - Build tools and package management
+
+## 📦 Installation
+
+1. **Clone or download the project:**
+   ```bash
+   git clone <repository-url>
+   cd portfolio
+   ```
+
+2. **Install dependencies:**
+   ```bash
+   npm install
+   ```
+
+3. **Start the development server:**
+   ```bash
+   npm start
+   ```
+
+4. **Open in browser:**
+   Navigate to `http://localhost:3000` (or the configured port)
+
+## 🎮 Usage
+
+### Viewing the Scene
+- **Mouse/Trackpad**: Drag to look around or navigate the camera
+- **Keyboard Controls**: Use arrow keys or WASD to move through the scene
+- **Scroll**: Zoom in/out for detailed inspection
+
+### Interacting with Objects
+- **Laptop**: Click to access project information or links
+- **Phone**: Click to view contact information or messages
+- **Printer**: Click to download documents (CV, etc.)
+- **Car**: Click and drag or use controls to move the car around the scene
+
+## 🏗 Architecture
+
+### Module System
+The project uses a modular architecture with clear separation of concerns:
+
+- **Scene Management**: `scene/` folder handles all Three.js scene setup
+- **Object Representation**: `objects/` contains entity definitions
+- **System Logic**: `systems/` manages application-level features
+- **UI Interactions**: `systems/interactions/` handles user-triggered events
+- **Utilities**: `utils/` provides reusable helper functions
+
+### Event Flow
+1. User interacts with the scene (mouse click, keyboard press)
+2. `events.js` captures and dispatches the event
+3. `interactionManager.js` routes to appropriate handler
+4. Specific interaction file (e.g., `laptopInteraction.js`) executes logic
+5. Scene updates are reflected in real-time
+
+### Animation Loop
+- `animate.js` manages the continuous render loop
+- All frame updates, physics, and animations are synchronized
+- Targets 60 FPS for smooth visual experience
+
+## 🎨 Interactive Elements
+
+### Laptop Interaction
+- Positioned strategically in the room
+- Click-activated to showcase projects or resume
+- Can display project previews or navigation menu
+
+### Phone
+- Interactive touchscreen simulation
+- Displays contact information
+- Potential for message/notification display
+
+### Printer
+- Document display and download functionality
+- Can print/download CV or portfolio PDF
+
+### Movable Car
+- Physics-enabled 3D object
+- Collision detection prevents clipping through objects
+- Can be controlled to navigate the room
+- Serves as an interactive element to explore hotspots
+
+## 👨‍💻 Development
+
+### Adding New Interactions
+1. Create a new interaction handler in `systems/interactions/`
+2. Import and register in `interactionManager.js`
+3. Define click areas using Three.js raycasting
+4. Implement the interaction logic
+
+### Adding New Objects
+1. Create model in Blender and export as `.glb`
+2. Place file in `assets/models/Blends/`
+3. Create object definition in `src/objects/`
+4. Use `modelLoader.js` to load and position in scene
+
+### Modifying Lighting
+- Edit `src/scene/lights.js` to adjust light positions, colors, and intensities
+- Use Three.js light helpers to visualize in development
+
+### Updating Textures
+- Replace texture files in `assets/textures/`
+- Update material definitions in respective object files
+
+## ⚡ Performance Considerations
+
+- **Texture Optimization**: 4K textures are used efficiently with proper compression
+- **Model Optimization**: Blender models are optimized before export
+- **Culling**: Objects outside the camera view are not rendered
+- **LOD (Level of Detail)**: Consider implementing for distant objects
+- **Draw Call Reduction**: Efficient batching of geometries
+
+## 📝 Notes
+
+- This project is optimized for modern browsers with WebGL support
+- Best viewed on desktop with a mouse/trackpad for full interaction
+- The scene is designed for single-user exploration
+- Audio files are included for potential interaction feedback
+
+## 🔧 Future Enhancements
+
+- [ ] Mobile responsiveness and touch controls
+- [ ] Sound effects for interactions
+- [ ] Animation transitions between states
+- [ ] Additional interactive objects
+- [ ] Scene state persistence (localStorage)
+- [ ] Performance optimization for low-end devices
+</file>
+
+<file path="src/objects/car.js">
+import { GLTFLoader } from "three/examples/jsm/Addons.js";
+
+class Car {
+    
+    static MAX_FORWARD_SPEED = 4.0;      // units/sec
+    static MAX_REVERSE_SPEED = 1.5;      // units/sec
+    static ACCELERATION = 6.0;           // units/sec^2
+    static BRAKE_DECELERATION = 8.0;     // when switching directions
+    static FREE_DECELERATION = 3.0;      // natural slow-down
+    static STEER_SPEED = 2.5;            // radians/sec at full steer, scaled by speed
+    
+    constructor() {
+        this.model = null;
+        this.velocity = 0;     
+        this.steering = 0;     
+    }
+    
+    async load() {
+        const loader = new GLTFLoader();
+
+        return new Promise((resolve, reject) => {
+            loader.load(
+                "../../assets/models/car_model.glb",
+                (gltf) => {
+                    this.model = gltf.scene;
+                    this.model.rotation.y = Math.PI; // rotate 180 degrees for directional fix
+                    this._initializePositionAndScale();
+                    resolve(this.model);
+                },
+                undefined,
+                (error) => {
+                    console.error("Error while loading car model ", error);
+                    reject(error);
+                }
+            );
+        });
+    }
+    
+    _initializePositionAndScale() {
+        if (!this.model) 
+            return; 
+        
+        const iScaleX = 0.5, iScaleY = 0.5, iScaleZ = 0.5;
+        const iPositionX = -4, iPositionY = 2.2, iPositionZ = 0;
+        
+        this.model.scale.set(iScaleX, iScaleY, iScaleZ);
+        this.model.position.set(iPositionX, iPositionY, iPositionZ);
+    }
+
+
+    // movement methods
+    updateMotion(input = { throttle: 0, steer: 0 }, delta = 1 / 60) {
+        if (!this.model) 
+            return; 
+
+        const throttle = Car._clamp(input.throttle || 0, -1, 1);
+        this.steering = Car._clamp(input.steer || 0, -1, 1);
+
+        this._integrateVelocity(throttle, delta);
+
+        const speedFactor = Math.min(1, Math.abs(this.velocity) /  Car.MAX_FORWARD_SPEED);
+        const steerAngle = this.steering * Car.STEER_SPEED * speedFactor * delta;
+
+        const directionMultiplier = this.velocity >= 0 ? 1 : -1; // Inverts the steering direction when the car is reversing.
+        
+        this.model.rotation.y -= steerAngle * directionMultiplier;
+        this.model.translateZ(this.velocity * delta);
+    }
+
+    _integrateVelocity(throttle, delta) {
+        const isAccelerating = throttle > 0;
+        const isBraking = throttle < 0;
+        const isCoasting = throttle === 0;
+        
+        const isMovingForward = this.velocity > 0;
+        const isMovingBackward = this.velocity < 0;
+        const isStopped = this.velocity === 0;
+        
+        if (isAccelerating) {
+            this._accelerateForward(throttle, delta);
+        } else if (isBraking && isMovingForward) {
+            this._brakeFromForwardMotion(throttle, delta);
+        } else if (isBraking && (isStopped || isMovingBackward)) {
+            this._accelerateBackward(throttle, delta);
+        } else if (isCoasting) {
+            this._applyNaturalDeceleration(delta);
+        }
+    }
+
+    _accelerateForward(throttle, delta) {
+        this.velocity += Car.ACCELERATION * throttle * delta;
+        this.velocity = Math.min(this.velocity, Car.MAX_FORWARD_SPEED);
+    }
+
+    _brakeFromForwardMotion(throttle, delta) {
+        this.velocity -= Car.BRAKE_DECELERATION * Math.abs(throttle) * delta;
+        this.velocity = Math.max(this.velocity, 0); // Don't go below 0
+    }
+
+    _accelerateBackward(throttle, delta) {
+        this.velocity -= Car.ACCELERATION * Math.abs(throttle) * delta;
+        this.velocity = Math.max(this.velocity, -Car.MAX_REVERSE_SPEED);
+    }
+
+    _applyNaturalDeceleration(delta) {
+        if (this.velocity > 0) {
+            this.velocity = Math.max(0, this.velocity - Car.FREE_DECELERATION * delta);
+        } else if (this.velocity < 0) {
+            this.velocity = Math.min(0, this.velocity + Car.FREE_DECELERATION * delta);
+        }
+    }
+
+
+    static _clamp(value, minimumValue, maximumValue) {
+        return Math.max(minimumValue, Math.min(maximumValue, value));
+    }
+}
+
+export default Car;
+</file>
+
+<file path="src/systems/events.js">
+const pressedKeys = new Set();
+
+export const inputState = {
+  throttle: 0,  // +1 forward, -1 reverse, 0 none
+  steer: 0      // -1 left, +1 right, 0 none
+};
+
+const KEYMAP = {
+  forward: ['w', 'arrowup'],
+  backward: ['s', 'arrowdown'],
+  left: ['a', 'arrowleft'],
+  right: ['d', 'arrowright']
+};
+
+let keydownHandler = null;
+let keyupHandler = null;
+
+export function addCarMovementEventListener() {
+  if (keydownHandler) {
+    console.warn('Keyboard controls already initialized');
+    return;
+  }
+
+  keydownHandler = _handleKeyDown;
+  keyupHandler = _handleKeyUp;
+
+  window.addEventListener('keydown', keydownHandler, { passive: false });
+  window.addEventListener('keyup', keyupHandler, { passive: true });
+}
+
+export function disposeKeyboardControls() {
+  if (!keydownHandler) {
+    console.warn('Keyboard controls not initialized');
+    return;
+  }
+
+  window.removeEventListener('keydown', keydownHandler);
+  window.removeEventListener('keyup', keyupHandler);
+
+  _resetInputSystem();
+}
+
+function _handleKeyDown(event) {
+  const key = event.key.toLowerCase();
+
+  _preventDefaultForGameKeys(event, key);
+  pressedKeys.add(key);
+  _updateInputState();
+}
+
+function _handleKeyUp(event) {
+  const key = event.key.toLowerCase();
+
+  pressedKeys.delete(key);
+  _updateInputState();
+}
+
+function _preventDefaultForGameKeys(event, key) {
+  const isArrowKey = key.startsWith('arrow');
+  const isSpaceKey = key === ' ';
+
+  if (isArrowKey || isSpaceKey) {
+    event.preventDefault();
+  }
+}
+
+function _resetInputSystem() {
+  keydownHandler = null;
+  keyupHandler = null;
+  pressedKeys.clear();
+  inputState.throttle = 0;
+  inputState.steer = 0;
+}
+
+function _updateInputState() {
+  const activeActions = _getActiveActions();
+
+  inputState.throttle = _calculateThrottle(activeActions);
+  inputState.steer = _calculateSteering(activeActions);
+}
+
+function _getActiveActions() {
+  return {
+    forward: _isActionPressed('forward'),
+    backward: _isActionPressed('backward'),
+    left: _isActionPressed('left'),
+    right: _isActionPressed('right')
+  };
+}
+
+function _isActionPressed(action) {
+  return KEYMAP[action].some(k => pressedKeys.has(k));
+}
+
+function _calculateThrottle({ forward, backward }) {
+  if (forward && backward) return 0;
+  if (forward) return 1;
+  if (backward) return -1;
+  return 0;
+}
+
+function _calculateSteering({ left, right }) {
+  if (left && right) return 0;
+  if (right) return 1;
+  if (left) return -1;
+  return 0;
+}
+</file>
+
+<file path="src/app.js">
+import * as THREE from 'three';
+
+import camera from './scene/camera';
+import controls from './scene/controls';
+import renderer from './scene/renderer';
+
+import Car from './objects/car';
+import room from './objects/room';
+
+import { backgroundLight } from './scene/lights';
+import { addCarMovementEventListener, disposeKeyboardControls, inputState } from './systems/events';
+import animate from './systems/animate';
+
+// Interactions
+import { createGroup } from './utils/createGroup';           
+import InteractionManager from './systems/interactions/interactionManager';
+
+import onPrinterClick from './systems/interactions/printerEvent';
+import onPhoneClick from './systems/interactions/phoneEvent';
+import onPcClick from './systems/interactions/laptopInteraction';
+
+export async function setUpScene() {
+    // Adding all event listeners
+    addWindowResizeEventListener(camera, renderer);
+    addCarMovementEventListener();
+
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color(0x000000);
+
+    scene.add(backgroundLight);
+
+    const axesHelper = new THREE.AxesHelper(5);
+    scene.add(axesHelper);
+
+    const gridHelper = new THREE.GridHelper(10, 10);
+    scene.add(gridHelper);
+
+    const roomModel = await room;
+    const car = new Car();
+    await car.load();
+
+    scene.add(roomModel);
+    scene.add(car.model);
+
+    // For debugging: print the room model hierarchy to console
+    console.log('Room model hierarchy:');
+    roomModel.traverse(obj => {
+    console.log(obj.name, obj.type);
+    });
+
+
+    // Setting up interactions
+    const interaction = new InteractionManager(scene, camera, renderer.domElement);
+
+    const printerGroup = createGroup(roomModel, "printer", [
+        "printer_body",
+        "printer_screen",
+        "printer_buttons",
+        "printer_tray"
+    ]);
+    if (printerGroup) {
+        interaction.register(printerGroup.name, onPrinterClick);
+        console.log('Registered printer group:', printerGroup);
+    } else {
+    console.warn("Printer not found!");
+    }
+
+    const phoneGroup = createGroup(roomModel, "phone", [
+        "telephone_body",
+        "telephone_miscellaneous",
+        "telephone_receiver",
+    ]);
+    if (phoneGroup) {
+        interaction.register(phoneGroup.name, onPhoneClick);
+        console.log('Registered phone group:', phoneGroup);
+    } else {
+        console.warn("Phone not found!");
+    }
+
+    const laptopGroup = createGroup(roomModel, "laptop", [
+        "laptop",
+    ]);
+    if (laptopGroup) {
+        interaction.register(laptopGroup.name, () => onPcClick({ camera, controls }));
+        console.log('Registered laptop group:', laptopGroup);
+    } else {
+        console.warn("Laptop not found!");
+    }
+
+    // Start animation loop
+
+    animate(scene, camera, controls, renderer, [
+        (delta) => handleCarMovement(car, delta)
+    ]);
+}
+
+function handleCarMovement(car, delta) {
+    car.updateMotion(inputState, delta);
+}
+
+function addWindowResizeEventListener(camera, renderer) {
+    window.addEventListener('resize', () => {
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+    });
+}
+</file>
+
+</files>

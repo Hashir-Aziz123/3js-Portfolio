@@ -6,6 +6,9 @@ renderer.setPixelRatio(window.devicePixelRatio);
 
 renderer.outputColorSpace = THREE.SRGBColorSpace;
 
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFShadowMap; // instead of BasicShadowMap
+
 document.body.appendChild(renderer.domElement);
 
 export default renderer;
