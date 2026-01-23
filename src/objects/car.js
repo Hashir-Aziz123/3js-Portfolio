@@ -24,6 +24,15 @@ class Car {
                 (gltf) => {
                     this.model = gltf.scene;
                     this.model.rotation.y = Math.PI; // rotate 180 degrees for directional fix
+
+                    // enable shadows
+                    this.model.traverse((child) => {
+                        if (child.isMesh) {
+                            child.castShadow = true;
+                            child.receiveShadow = true;
+                        }
+                    });
+
                     this._initializePositionAndScale();
                     resolve(this.model);
                 },

@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { RectAreaLightUniformsLib, RectAreaLightHelper } from 'three/examples/jsm/Addons.js';
 
 import camera from './scene/camera';
 import controls from './scene/controls';
@@ -7,7 +8,7 @@ import renderer from './scene/renderer';
 import Car from './objects/car';
 import room from './objects/room';
 
-import { backgroundLight, moonLight, lampLight, moonLightTarget, windowBeam, beamTarget } from './scene/lights';
+import { backgroundLight, moonLight, lampLight, moonLightTarget, windowBeam, beamTarget, printerLight, phoneLight, greenScreenMesh, redScreenMesh } from './scene/lights';
 import { addCarMovementEventListener, disposeKeyboardControls, inputState } from './systems/events';
 import animate from './systems/animate';
 
@@ -27,6 +28,8 @@ export async function setUpScene() {
     const scene = new THREE.Scene();
     scene.background = new THREE.Color(0x000000);
 
+    RectAreaLightUniformsLib.init();
+
     // Adding lights
     scene.add(backgroundLight);
     scene.add(lampLight);
@@ -34,6 +37,13 @@ export async function setUpScene() {
     scene.add(moonLightTarget);
     scene.add(windowBeam);
     scene.add(beamTarget);
+
+    scene.add(printerLight);
+    scene.add(greenScreenMesh);
+    scene.add(phoneLight)
+    scene.add(redScreenMesh);
+
+
 
     // Adding light helpers for debugging
     // const moonHelper = new THREE.DirectionalLightHelper(moonLight, 1);
@@ -46,6 +56,12 @@ export async function setUpScene() {
 
     // const moonHelper = new THREE.DirectionalLightHelper(windowBeam, 1);
     // scene.add(moonHelper);
+
+    // const printerLightHelper = new RectAreaLightHelper(printerLight);
+    // scene.add(printerLightHelper);
+
+    // const phoneLightHelper = new RectAreaLightHelper(phoneLight);
+    // scene.add(phoneLightHelper);
 
     // const shadowHelper2 = new THREE.CameraHelper(lampLight.shadow.camera);
     

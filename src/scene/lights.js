@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 
 // Ambient Light
-const backgroundLight = new THREE.AmbientLight(0xffffff, 0);
+const backgroundLight = new THREE.AmbientLight(0xffffff, 0.045); // keep it 0
 
 // Moon Light
 const moonLight = new THREE.DirectionalLight(0xaaccff, 0.4);
@@ -28,7 +28,7 @@ moonLightTarget.position.set(-4, 4, 0);
 moonLight.target = moonLightTarget;
 
 // window light -6, 5, 12
-const windowBeam = new THREE.SpotLight(0xddeeff, 50); // High intensity (50-100)
+const windowBeam = new THREE.SpotLight(0xddeeff, 40); // High intensity (50-100)
 windowBeam.position.set(-6, 5, 12); 
 windowBeam.distance = 20;
 windowBeam.angle = Math.PI / 3; // Narrow beam (30 degrees)
@@ -57,8 +57,43 @@ lampLight.shadow.radius = 4;
 lampLight.shadow.mapSize.width = 2048; 
 lampLight.shadow.mapSize.height = 2048;
 
+// Printer Light
 
+const greenScreenMaterial = new THREE.MeshStandardMaterial({
+    color: 0x00ff00,          // Base color is black so only the glow shows
+    emissive: 0x00ff00,       // The "glow" color (Pure Green)
+    emissiveIntensity: 2.0,   // How much it "pops" visually
+    roughness: 0.1,           // Makes it look a bit like glass
+    metalness: 0.5,
+    side: THREE.DoubleSide
+});
 
+const greenScreenGeometry = new THREE.PlaneGeometry(0.12, 0.04);
+const greenScreenMesh = new THREE.Mesh(greenScreenGeometry, greenScreenMaterial);
+greenScreenMesh.position.set(-1.41, 4.1, -3.25);
+greenScreenMesh.rotation.y = Math.PI / 2;
 
+const printerLight = new THREE.RectAreaLight(0x00ff00, 5, 0.12, 0.04);
+printerLight.position.set(-1.42, 4.1, -3.25);
+printerLight.rotation.y = Math.PI / 2;
 
-export {backgroundLight, moonLight, lampLight, windowBeam, moonLightTarget, beamTarget};
+// Phone light
+const redScreenMaterial = new THREE.MeshStandardMaterial({
+    color: 0xff0000,          // Base color is black so only the glow shows
+    emissive: 0xff0000,       // The "glow" color (Pure Red)
+    emissiveIntensity: 2.0,   // How much it "pops" visually
+    roughness: 0.1,           // Makes it look a bit like glass
+    metalness: 0.5,
+    side: THREE.DoubleSide
+});
+
+const redScreenGeometry = new THREE.PlaneGeometry(0.15, 0.02);
+const redScreenMesh = new THREE.Mesh(redScreenGeometry, redScreenMaterial);
+redScreenMesh.position.set(-1.15, 3.72, -4.8);
+redScreenMesh.rotation.y = Math.PI / 2;
+
+const phoneLight = new THREE.RectAreaLight(0xFF0000, 5, 0.15, 0.02);
+phoneLight.position.set(-1.16, 3.72, -4.8);
+phoneLight.rotation.y = Math.PI / 2;
+
+export {backgroundLight, moonLight, lampLight, windowBeam, moonLightTarget, beamTarget, printerLight, phoneLight, greenScreenMesh, redScreenMesh};
