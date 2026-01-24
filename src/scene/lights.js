@@ -8,8 +8,8 @@ const moonLight = new THREE.DirectionalLight(0xaaccff, 0.4);
 moonLight.position.set(-5, 6, 6);
 
 moonLight.castShadow = true;
-moonLight.shadow.mapSize.width = 4096;
-moonLight.shadow.mapSize.height = 4096;
+moonLight.shadow.mapSize.width = 1024;
+moonLight.shadow.mapSize.height = 1024;
 moonLight.shadow.bias = -0.00005;
 moonLight.shadow.normalBias = 0;
 
@@ -54,8 +54,8 @@ lampLight.shadow.bias = -0.00005;
 lampLight.shadow.normalBias = 0;
 
 lampLight.shadow.radius = 4; 
-lampLight.shadow.mapSize.width = 2048; 
-lampLight.shadow.mapSize.height = 2048;
+lampLight.shadow.mapSize.width = 1024; 
+lampLight.shadow.mapSize.height = 1024;
 
 // Printer Light
 

@@ -10,6 +10,7 @@ import room from './objects/room';
 
 import { backgroundLight, moonLight, lampLight, moonLightTarget, windowBeam, beamTarget, printerLight, phoneLight, greenScreenMesh, redScreenMesh } from './scene/lights';
 import { addCarMovementEventListener, disposeKeyboardControls, inputState } from './systems/events';
+import { createComposer } from './scene/postprocessing';
 import animate from './systems/animate';
 
 // Interactions
@@ -21,6 +22,7 @@ import onPhoneClick from './systems/interactions/phoneEvent';
 import onPcClick from './systems/interactions/laptopInteraction';
 
 export async function setUpScene() {
+
     // Adding all event listeners
     addWindowResizeEventListener(camera, renderer);
     addCarMovementEventListener();
@@ -125,11 +127,11 @@ export async function setUpScene() {
         console.warn("Laptop not found!");
     }
 
-    // Start animation loop
+    // Post-processing 
+    const composer = createComposer(renderer, scene, camera);
 
-    animate(scene, camera, controls, renderer, [
-        (delta) => handleCarMovement(car, delta)
-    ]);
+    // Start animation loop
+    animate(scene, camera, controls, renderer, [], composer);
 }
 
 function handleCarMovement(car, delta) {

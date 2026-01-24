@@ -1,4 +1,4 @@
-function animate(scene, camera, controls, renderer, updateCallbacks = []) {
+function animate(scene, camera, controls, renderer, updateCallbacks = [], composer = null) {
   let prevTime = performance.now();
 
   function loop(now) {
@@ -7,7 +7,7 @@ function animate(scene, camera, controls, renderer, updateCallbacks = []) {
     const delta = Math.max(0, (now - prevTime) / 1000); // seconds
     prevTime = now;
 
-    // run all update callbacks with delta
+    // Generic update loop 
     for (let i = 0; i < updateCallbacks.length; i++) {
       try {
         updateCallbacks[i](delta, now);
@@ -17,13 +17,17 @@ function animate(scene, camera, controls, renderer, updateCallbacks = []) {
     }
 
     controls.update();
-    renderer.render(scene, camera);
+
+    if (composer) {
+        composer.render();
+    } else {
+        renderer.render(scene, camera);
+    }
   }
 
   // kick off the loop
   requestAnimationFrame(loop);
 
-  // return a small handle so caller can stop the loop if they want later
   return {
     stop() { /* not implemented - left intentionally minimal */ }
   };
