@@ -20,7 +20,7 @@ class Car {
 
         return new Promise((resolve, reject) => {
             loader.load(
-                "../../assets/models/car_model.glb",
+                "/assets/models/car_model.glb",
                 (gltf) => {
                     this.model = gltf.scene;
                     this.model.rotation.y = Math.PI; // rotate 180 degrees for directional fix

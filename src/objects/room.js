@@ -6,7 +6,7 @@ const textureLoader = new THREE.TextureLoader();
 
 const room = new Promise((resolve, reject) =>{
     gltfLoader.load(
-        '../../assets/models/cleaned_portfolio_model_3.glb',
+        '/assets/models/cleaned_portfolio_model_3.glb',
         (gltf) => {
             const roomScene = gltf.scene;
             roomScene.position.set(0, 0, 0);

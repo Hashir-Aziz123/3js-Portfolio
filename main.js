@@ -31,7 +31,8 @@ const startExperience = async () => {
     window.removeEventListener('click', startExperience);
 
     // 5. Unlock Audio Context
-    audioManager.startContext();
+    // audioManager.startContext();
+    await audioManager.listener.context.resume();
 
     // 6. Fade out overlay
     overlay.style.opacity = '0';

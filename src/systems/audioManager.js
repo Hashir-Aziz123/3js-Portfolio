@@ -44,12 +44,12 @@ class AudioManager {
 
         try{
             const [rainBuf, clickBuf, lofi1, lofi2, lofi3, lofi4] = await Promise.all([
-                load('../../assets/audio/pure-theta-4-7hz-rain-and-417hz-music-351390.mp3'),
-                load('../../assets/audio/mouse-click-405462.mp3'),
-                load('../../assets/audio/ukrainian-doomer-ambient-music-342198.mp3'),
-                load('../../assets/audio/cozy-lofi-background-music-for-study-457198.mp3'),
-                load('../../assets/audio/kiss-the-rain-274811.mp3'),
-                load('../../assets/audio/good-night-lofi-cozy-chill-music-160166.mp3'),
+                load('/assets/audio/heavy-raining-rain-on-tree-natural-clear-sound-abbas-ali-quiet-life-relaxing-music-11938.mp3'),
+                load('/assets/audio/mouse-click-405462.mp3'),
+                load('/assets/audio/chill-lofi-ambient-lofi-music-457259.mp3'),
+                load('/assets/audio/cozy-lofi-background-music-for-study-457198.mp3'),
+                load('/assets/audio/chill-night-cozy-lofi-music-452693.mp3'), 
+                load('/assets/audio/good-night-lofi-cozy-chill-music-160166.mp3'),
             ]);
 
             this.buffers.rain = rainBuf;
@@ -82,7 +82,7 @@ class AudioManager {
         this.rainAudio.setBuffer(this.buffers.rain);
         this.rainAudio.setRefDistance(2);
         this.rainAudio.setLoop(true);
-        this.rainAudio.setVolume(this.masterVolume); // change this to function of master volume
+        this.rainAudio.setVolume(2 * this.masterVolume); // change this to function of master volume
 
         windowMesh.add(this.rainAudio);
         this.rainAudio.play();
@@ -102,19 +102,32 @@ class AudioManager {
     }
 
     playNextTrack() {
-
         const buffer = this.musicTracks[this.currentTrackIndex];
+
+        // Stop any currently playing music
+        if (this.musicOutput.isPlaying) {
+            this.musicOutput.stop();
+        }
 
         this.musicOutput.setBuffer(buffer);
         this.musicOutput.setLoop(false);
-        this.musicOutput.setVolume(0); // start muted
+        this.musicOutput.setVolume(0.1 * this.masterVolume);
+        
+        // Set up the ended callback BEFORE playing
+        // We need to wait for the source to be created
+        const originalPlay = this.musicOutput.play.bind(this.musicOutput);
+        this.musicOutput.play();
+        
+        // The source is created after play() is called
+        if (this.musicOutput.source) {
+            this.musicOutput.source.onended = () => {
+                console.log("Track ended, playing next...");
+                this.currentTrackIndex = (this.currentTrackIndex + 1) % this.musicTracks.length;
+                this.playNextTrack();
+            };
+        }
 
-        this.fadeVolume(this.musicOutput, 0, 10 * this.masterVolume, 3000); // fade in
-
-        this.musicOutput.onEnded = () => {
-            this.currentTrackIndex = (this.currentTrackIndex + 1) % this.musicTracks.length;
-            this.playNextTrack();
-        };
+        this.fadeVolume(this.musicOutput, 0.05 * this.masterVolume, 0.1 * this.masterVolume, 1000);
     }
 
     fadeVolume(audioNode, startVol, endVol, duration) {

@@ -132,11 +132,14 @@ export async function setUpScene() {
 
     // Audio setup
     audioManager.setupCameraListener(camera);
-    audioManager.loadAssets().then(() => {
-        const windowMesh = scene.getObjectByName('window_glass');
-        if (windowMesh) audioManager.initRain(windowMesh);
-    });
-
+   
+    const windowMesh = scene.getObjectByName('window_glass');
+    if (windowMesh) {
+        audioManager.initRain(windowMesh);
+    } else {
+        console.warn("Window glass mesh not found!");
+    }
+    
     // Post-processing 
     const composer = createComposer(renderer, scene, camera);
 
