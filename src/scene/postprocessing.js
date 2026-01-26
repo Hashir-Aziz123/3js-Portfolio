@@ -14,7 +14,7 @@ export function createComposer(renderer, scene, camera){
     const bloomPass = new UnrealBloomPass( 
         new THREE.Vector2( window.innerWidth, window.innerHeight ),
         0.15, // strength
-        0.5, // radius
+        0.35, // radius
         0.9 // threshold
     );
     composer.addPass( bloomPass );

@@ -21,6 +21,9 @@ import onPrinterClick from './systems/interactions/printerEvent';
 import onPhoneClick from './systems/interactions/phoneEvent';
 import onPcClick from './systems/interactions/laptopInteraction';
 
+// Audio
+import audioManager from './systems/audioManager';
+
 export async function setUpScene() {
 
     // Adding all event listeners
@@ -70,10 +73,10 @@ export async function setUpScene() {
     
 
     // Axes Helpers
-    const axesHelper = new THREE.AxesHelper(5);
-    scene.add(axesHelper);
-    const gridHelper = new THREE.GridHelper(10, 10);
-    scene.add(gridHelper);
+    // const axesHelper = new THREE.AxesHelper(5);
+    // scene.add(axesHelper);
+    // const gridHelper = new THREE.GridHelper(10, 10);
+    // scene.add(gridHelper);
 
     const roomModel = await room;
     const car = new Car();
@@ -126,6 +129,13 @@ export async function setUpScene() {
     } else {
         console.warn("Laptop not found!");
     }
+
+    // Audio setup
+    audioManager.setupCameraListener(camera);
+    audioManager.loadAssets().then(() => {
+        const windowMesh = scene.getObjectByName('window_glass');
+        if (windowMesh) audioManager.initRain(windowMesh);
+    });
 
     // Post-processing 
     const composer = createComposer(renderer, scene, camera);
