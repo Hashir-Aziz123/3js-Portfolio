@@ -2,15 +2,14 @@ import * as THREE from 'three';
 
 /*
     Listener: Attached to the camera
-    Rain: Positional audio attached to the window.
-    Music: Global audio
-    SFX: Pool of sounds for UI interactions
+    Rain: Positional audio (Web Audio API) - Loaded into RAM for 3D physics.
+    Music: Global audio (HTML5 Streaming) - Streamed from disk to save RAM.
+    SFX: Positional audio - Loaded into RAM for low latency.
 */
 
 class AudioManager {
 
     constructor() {
-
         this.listener = new THREE.AudioListener();
         this.loader = new THREE.AudioLoader();
 
@@ -18,16 +17,17 @@ class AudioManager {
         this.rainAudio = null;
         this.musicTracks = [];
         this.currentTrackIndex = 0;
-        this.musicOutput = null;
+        
+        // Changed: We now track the HTML Audio Element instead of a THREE.Audio source
+        this.currentStream = null; 
 
         // State
         this.isMuted = false;
         this.masterVolume = 1.0;
 
-        // Buffers
+        // Buffers (Only for 3D sounds)
         this.buffers = {
             click: null,
-            thunder: null,
             rain: null,
         };
     }
@@ -39,24 +39,28 @@ class AudioManager {
     }
 
     async loadAssets() {
+        const loadBuffer = (path) => this.loader.loadAsync(path);
 
-        const load = (path) => this.loader.loadAsync(path);
-
-        try{
-            const [rainBuf, clickBuf, lofi1, lofi2, lofi3, lofi4] = await Promise.all([
-                load('/assets/audio/heavy-raining-rain-on-tree-natural-clear-sound-abbas-ali-quiet-life-relaxing-music-11938.mp3'),
-                load('/assets/audio/mouse-click-405462.mp3'),
-                load('/assets/audio/chill-lofi-ambient-lofi-music-457259.mp3'),
-                load('/assets/audio/cozy-lofi-background-music-for-study-457198.mp3'),
-                load('/assets/audio/chill-night-cozy-lofi-music-452693.mp3'), 
-                load('/assets/audio/good-night-lofi-cozy-chill-music-160166.mp3'),
+        try {
+            // 1. Load ONLY 3D sounds into Memory (Rain & SFX)
+            // This saves ~100MB+ of RAM by NOT loading music here
+            const [rainBuf, clickBuf] = await Promise.all([
+                loadBuffer('/assets/audio/heavy-raining-rain-on-tree-natural-clear-sound-abbas-ali-quiet-life-relaxing-music-11938.mp3'),
+                loadBuffer('/assets/audio/mouse-click-405462.mp3'),
             ]);
 
             this.buffers.rain = rainBuf;
             this.buffers.click = clickBuf;
-            this.musicTracks = [lofi1, lofi2, lofi3, lofi4];
 
-            console.log("Audio assets loaded.");
+            // 2. Store Music Paths as Strings (Zero RAM cost until played)
+            this.musicTracks = [
+                '/assets/audio/chill-lofi-ambient-lofi-music-457259.mp3',
+                '/assets/audio/cozy-lofi-background-music-for-study-457198.mp3',
+                '/assets/audio/chill-night-cozy-lofi-music-452693.mp3',
+                '/assets/audio/good-night-lofi-cozy-chill-music-160166.mp3'
+            ];
+
+            console.log("Audio assets loaded (Hybrid Mode).");
         } 
         catch(err){
             console.error("Error loading audio assets:", err);
@@ -69,10 +73,9 @@ class AudioManager {
         }
     }
 
-    // RAIN SYSTEM
+    // RAIN SYSTEM (Remains Web Audio API for 3D Position)
 
     initRain(windowMesh) {
-
         if(!this.buffers.rain) {
             console.warn("Rain buffer not loaded.");
             return;
@@ -82,72 +85,81 @@ class AudioManager {
         this.rainAudio.setBuffer(this.buffers.rain);
         this.rainAudio.setRefDistance(2);
         this.rainAudio.setLoop(true);
-        this.rainAudio.setVolume(2 * this.masterVolume); // change this to function of master volume
+        this.rainAudio.setVolume(2 * this.masterVolume); 
 
         windowMesh.add(this.rainAudio);
         this.rainAudio.play();
     }
 
-    // MUSIC SYSTEM
+    // MUSIC SYSTEM (Switched to HTML5 Streaming)
 
     playMusic() {
-
         if (this.musicTracks.length === 0) {
             console.warn("No music tracks loaded.");
             return;
         }
-
-        this.musicOutput = new THREE.Audio(this.listener);
         this.playNextTrack();
     }
 
     playNextTrack() {
-        const buffer = this.musicTracks[this.currentTrackIndex];
-
-        // Stop any currently playing music
-        if (this.musicOutput.isPlaying) {
-            this.musicOutput.stop();
+        // Stop previous stream if it exists
+        if (this.currentStream) {
+            this.currentStream.pause();
+            this.currentStream.currentTime = 0;
+            this.currentStream = null;
         }
 
-        this.musicOutput.setBuffer(buffer);
-        this.musicOutput.setLoop(false);
-        this.musicOutput.setVolume(0.1 * this.masterVolume);
+        const path = this.musicTracks[this.currentTrackIndex];
         
-        // Set up the ended callback BEFORE playing
-        // We need to wait for the source to be created
-        const originalPlay = this.musicOutput.play.bind(this.musicOutput);
-        this.musicOutput.play();
-        
-        // The source is created after play() is called
-        if (this.musicOutput.source) {
-            this.musicOutput.source.onended = () => {
-                console.log("Track ended, playing next...");
-                this.currentTrackIndex = (this.currentTrackIndex + 1) % this.musicTracks.length;
-                this.playNextTrack();
-            };
-        }
+        // Create new HTML Audio instance (Streams from file)
+        const audio = new Audio(path);
+        audio.loop = false;
+        audio.volume = 0; // Start silent for fade-in
 
-        this.fadeVolume(this.musicOutput, 0.05 * this.masterVolume, 0.1 * this.masterVolume, 1000);
+        // Play
+        audio.play().catch(e => console.warn("Autoplay blocked or stream failed:", e));
+        
+        // Save reference
+        this.currentStream = audio;
+
+        // Handle Track End
+        audio.onended = () => {
+            console.log("Track ended, playing next...");
+            this.currentTrackIndex = (this.currentTrackIndex + 1) % this.musicTracks.length;
+            this.playNextTrack();
+        };
+
+        // Fade In (Target Volume: 0.1 * Master)
+        this.fadeStream(audio, 0, 0.1 * this.masterVolume, 2000);
     }
 
-    fadeVolume(audioNode, startVol, endVol, duration) {
+    // Custom Fader for HTML5 Audio (Since we can't use AudioContext nodes easily here)
+    fadeStream(element, startVol, endVol, duration) {
+        let startTime = null;
 
-        const startTime = this.listener.context.currentTime;
+        const animate = (time) => {
+            if (!startTime) startTime = time;
+            const elapsed = time - startTime;
+            const progress = Math.min(elapsed / duration, 1);
 
-        audioNode.gain.gain.setValueAtTime(startVol, startTime);
-        audioNode.gain.gain.linearRampToValueAtTime(endVol, startTime + duration / 1000);
+            // Linear interpolation
+            element.volume = startVol + (endVol - startVol) * progress;
+
+            if (progress < 1) {
+                requestAnimationFrame(animate);
+            } else {
+                element.volume = endVol; // Ensure exact final value
+            }
+        };
+        
+        requestAnimationFrame(animate);
     }
 
-    // SFX SYSTEM
+    // SFX SYSTEM (Remains Web Audio API for low latency)
 
     playSFX(type, position) {
+        if (!this.buffers[type]) return;
 
-        if (!this.buffers[type]) {
-            console.warn(`SFX buffer for type "${type}" not loaded.`);
-            return;
-        }
-
-        // temporarily create a positional audio for the effect
         const sound = new THREE.PositionalAudio(this.listener);
         sound.setBuffer(this.buffers[type]);
         sound.setRefDistance(1);
@@ -158,16 +170,12 @@ class AudioManager {
     }
 
     playClickSound(object) {
-
-        if (!this.buffers.click) {
-            console.warn("Click SFX buffer not loaded.");
-            return;
-        }
+        if (!this.buffers.click) return;
 
         const sound = new THREE.PositionalAudio(this.listener);
         sound.setBuffer(this.buffers.click);
         sound.setRefDistance(1);
-        sound.setVolume(1);
+        sound.setVolume(1.0);
 
         object.add(sound);
         sound.play();
