@@ -24,6 +24,9 @@ import onPcClick from './systems/interactions/laptopInteraction';
 // Audio
 import audioManager from './systems/audioManager';
 
+// rain Shader
+import { createRainPlane } from './scene/environment';
+
 export async function setUpScene() {
 
     // Adding all event listeners
@@ -85,6 +88,18 @@ export async function setUpScene() {
     scene.add(roomModel);
     scene.add(car.model);
 
+    // Adding rain shader
+    const { mesh: rainMesh, material: rainMaterial } = createRainPlane(4, 3);
+    rainMesh.position.set(-4.2, 5, 7.11);
+    rainMesh.rotation.y = Math.PI ;
+
+    scene.add(rainMesh);
+
+    // Helper 
+
+    const rainHelper = new THREE.BoxHelper(rainMesh, 0xffff00); // Bright yellow
+    scene.add(rainHelper);
+
     // For debugging: print the room model hierarchy to console
     console.log('Room model hierarchy:');
     roomModel.traverse(obj => {
@@ -133,18 +148,28 @@ export async function setUpScene() {
     // Audio setup
     audioManager.setupCameraListener(camera);
    
+    audioManager.startRainStream();
+
+    const windowTargetPos = new THREE.Vector3();     
     const windowMesh = scene.getObjectByName('window_glass');
+
     if (windowMesh) {
-        audioManager.initRain(windowMesh);
+        windowMesh.getWorldPosition(windowTargetPos); 
     } else {
-        console.warn("Window glass mesh not found!");
+        console.warn("Window glass mesh not found! Defaulting to manual position.");
+        windowTargetPos.set(-6, 5, 12); 
     }
     
     // Post-processing 
     const composer = createComposer(renderer, scene, camera);
 
     // Start animation loop
-    animate(scene, camera, controls, renderer, [], composer);
+    animate(scene, camera, controls, renderer, [
+        (delta, now) => {
+            audioManager.updateRainVolume(camera.position, windowTargetPos);
+            rainMaterial.uniforms.uTime.value = now;
+        }
+    ], composer);
 }
 
 function handleCarMovement(car, delta) {

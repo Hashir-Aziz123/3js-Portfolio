@@ -40,16 +40,11 @@ class AudioManager {
 
     async loadAssets() {
         const loadBuffer = (path) => this.loader.loadAsync(path);
-
         try {
-            // 1. Load ONLY 3D sounds into Memory (Rain & SFX)
-            // This saves ~100MB+ of RAM by NOT loading music here
-            const [rainBuf, clickBuf] = await Promise.all([
-                loadBuffer('/assets/audio/heavy-raining-rain-on-tree-natural-clear-sound-abbas-ali-quiet-life-relaxing-music-11938.mp3'),
+            // 1. ONLY load the Click sound into RAM (It's tiny, <1MB)
+            const [clickBuf] = await Promise.all([
                 loadBuffer('/assets/audio/mouse-click-405462.mp3'),
             ]);
-
-            this.buffers.rain = rainBuf;
             this.buffers.click = clickBuf;
 
             // 2. Store Music Paths as Strings (Zero RAM cost until played)
@@ -75,21 +70,31 @@ class AudioManager {
 
     // RAIN SYSTEM (Remains Web Audio API for 3D Position)
 
-    initRain(windowMesh) {
-        if(!this.buffers.rain) {
-            console.warn("Rain buffer not loaded.");
-            return;
-        }
-
-        this.rainAudio = new THREE.PositionalAudio(this.listener);
-        this.rainAudio.setBuffer(this.buffers.rain);
-        this.rainAudio.setRefDistance(2);
-        this.rainAudio.setLoop(true);
-        this.rainAudio.setVolume(2 * this.masterVolume); 
-
-        windowMesh.add(this.rainAudio);
-        this.rainAudio.play();
+    
+    startRainStream() {
+        // Create HTML Audio (No decoding to RAM)
+        this.rainStream = new Audio('/assets/audio/heavy-raining-rain-on-tree-natural-clear-sound-abbas-ali-quiet-life-relaxing-music-11938.mp3');
+        this.rainStream.loop = true;
+        this.rainStream.volume = 0; 
+        this.rainStream.play().catch(e => console.warn("Rain blocked:", e));
     }
+
+
+    updateRainVolume(cameraPosition, windowPosition) {
+        if (!this.rainStream) return;
+
+        const distance = cameraPosition.distanceTo(windowPosition);
+        
+        const maxDistance = 25; 
+        const maxVolume = 1 * this.masterVolume;
+
+        // Linear drop-off formula
+        let volume = 1 - (distance / maxDistance);
+        volume = Math.max(0, Math.min(volume, maxVolume));
+
+        this.rainStream.volume = volume * this.masterVolume;
+    }
+ 
 
     // MUSIC SYSTEM (Switched to HTML5 Streaming)
 
