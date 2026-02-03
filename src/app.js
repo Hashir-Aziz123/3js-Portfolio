@@ -91,7 +91,10 @@ export async function setUpScene() {
 
     scene.add(roomModel);
     scene.add(car.model);
+
+    // Screen Mesh on Laptop
     scene.add(screenMesh);
+    
 
     // Adding rain shader
     const { mesh: rainGroup } = createRainPlane(4, 3.5); // Adjust size as needed
