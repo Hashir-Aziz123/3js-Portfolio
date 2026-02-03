@@ -7,6 +7,7 @@ import renderer from './scene/renderer';
 
 import Car from './objects/car';
 import room from './objects/room';
+import screenMesh from './objects/screenMesh';
 
 import { backgroundLight, moonLight, lampLight, moonLightTarget, windowBeam, beamTarget, printerLight, phoneLight, greenScreenMesh, redScreenMesh } from './scene/lights';
 import { addCarMovementEventListener, disposeKeyboardControls, inputState } from './systems/events';
@@ -28,6 +29,9 @@ import audioManager from './systems/audioManager';
 import { createRainPlane } from './scene/environment';
 
 export async function setUpScene() {
+
+    window.camera = camera;
+    window.controls = controls;
 
     // Adding all event listeners
     addWindowResizeEventListener(camera, renderer);
@@ -87,17 +91,19 @@ export async function setUpScene() {
 
     scene.add(roomModel);
     scene.add(car.model);
+    scene.add(screenMesh);
 
     // Adding rain shader
-    const { mesh: rainMesh, material: rainMaterial } = createRainPlane(4, 3);
-    rainMesh.position.set(-4.2, 5, 7.11);
-    rainMesh.rotation.y = Math.PI ;
+    const { mesh: rainGroup } = createRainPlane(4, 3.5); // Adjust size as needed
+    rainGroup.position.set(-4.2, 5.3, 7.11); // Position outside window // 7.11
+    rainGroup.rotation.y = Math.PI; // Rotate to match window (try 0, PI, or PI/2)
+    scene.add(rainGroup);
 
-    scene.add(rainMesh);
+
 
     // Helper 
 
-    const rainHelper = new THREE.BoxHelper(rainMesh, 0xffff00); // Bright yellow
+    const rainHelper = new THREE.BoxHelper(rainGroup, 0xffff00); // Bright yellow
     scene.add(rainHelper);
 
     // For debugging: print the room model hierarchy to console
@@ -167,7 +173,7 @@ export async function setUpScene() {
     animate(scene, camera, controls, renderer, [
         (delta, now) => {
             audioManager.updateRainVolume(camera.position, windowTargetPos);
-            rainMaterial.uniforms.uTime.value = now;
+            if (rainGroup.userData.tick) rainGroup.userData.tick(delta);
         }
     ], composer);
 }
