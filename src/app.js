@@ -4,12 +4,13 @@ import { RectAreaLightUniformsLib, RectAreaLightHelper } from 'three/examples/js
 import camera from './scene/camera';
 import controls from './scene/controls';
 import renderer from './scene/renderer';
+import { createCSSRenderer } from './scene/cssRenderer'; // 🟢 NEW: Import CSS Renderer
 
 import Car from './objects/car';
 import room from './objects/room';
 import screenMesh from './objects/screenMesh';
 
-import { backgroundLight, moonLight, lampLight, moonLightTarget, windowBeam, beamTarget, printerLight, phoneLight, greenScreenMesh, redScreenMesh } from './scene/lights';
+import { backgroundLight, moonLight, lampLight, moonLightTarget, windowBeam, beamTarget, printerLight, phoneLight, greenScreenMesh, redScreenMesh, laptopScreenLight } from './scene/lights';
 import { addCarMovementEventListener, disposeKeyboardControls, inputState } from './systems/events';
 import { createComposer } from './scene/postprocessing';
 import animate from './systems/animate';
@@ -33,8 +34,13 @@ export async function setUpScene() {
     window.camera = camera;
     window.controls = controls;
 
+    // 🟢 NEW: Initialize CSS Renderer
+    const cssRenderer = createCSSRenderer();
+    document.body.appendChild(cssRenderer.domElement);
+
     // Adding all event listeners
-    addWindowResizeEventListener(camera, renderer);
+    // 🟢 NEW: Pass cssRenderer to resize handler
+    addWindowResizeEventListener(camera, renderer, cssRenderer); 
     addCarMovementEventListener();
 
     const scene = new THREE.Scene();
@@ -55,35 +61,10 @@ export async function setUpScene() {
     scene.add(phoneLight)
     scene.add(redScreenMesh);
 
+    scene.add(laptopScreenLight);
 
-
-    // Adding light helpers for debugging
-    // const moonHelper = new THREE.DirectionalLightHelper(moonLight, 1);
-    // scene.add(moonHelper);
-    // const lampHelper = new THREE.PointLightHelper(lampLight, 0.2);
-    // scene.add(lampHelper);
-
-    // const shadowHelper1 = new THREE.CameraHelper(moonLight.shadow.camera);
-    // scene.add(shadowHelper1);
-
-    // const moonHelper = new THREE.DirectionalLightHelper(windowBeam, 1);
-    // scene.add(moonHelper);
-
-    // const printerLightHelper = new RectAreaLightHelper(printerLight);
-    // scene.add(printerLightHelper);
-
-    // const phoneLightHelper = new RectAreaLightHelper(phoneLight);
-    // scene.add(phoneLightHelper);
-
-    // const shadowHelper2 = new THREE.CameraHelper(lampLight.shadow.camera);
-    
-    
-
-    // Axes Helpers
-    // const axesHelper = new THREE.AxesHelper(5);
-    // scene.add(axesHelper);
-    // const gridHelper = new THREE.GridHelper(10, 10);
-    // scene.add(gridHelper);
+    // const laptopLightHelper = new RectAreaLightHelper(laptopScreenLight);
+    // scene.add(laptopLightHelper);
 
     const roomModel = await room;
     const car = new Car();
@@ -97,66 +78,41 @@ export async function setUpScene() {
     
 
     // Adding rain shader
-    const { mesh: rainGroup } = createRainPlane(4, 3.5); // Adjust size as needed
-    rainGroup.position.set(-4.2, 5.3, 7.11); // Position outside window // 7.11
-    rainGroup.rotation.y = Math.PI; // Rotate to match window (try 0, PI, or PI/2)
+    const { mesh: rainGroup } = createRainPlane(4, 3.5); 
+    rainGroup.position.set(-4.2, 5.3, 7.11); 
+    rainGroup.rotation.y = Math.PI; 
     scene.add(rainGroup);
 
-
-
-    // Helper 
-
-    const rainHelper = new THREE.BoxHelper(rainGroup, 0xffff00); // Bright yellow
+    const rainHelper = new THREE.BoxHelper(rainGroup, 0xffff00); 
     scene.add(rainHelper);
-
-    // For debugging: print the room model hierarchy to console
-    console.log('Room model hierarchy:');
-    roomModel.traverse(obj => {
-    console.log(obj.name, obj.type);
-    });
-
 
     // Setting up interactions
     const interaction = new InteractionManager(scene, camera, renderer.domElement);
 
     const printerGroup = createGroup(roomModel, "printer", [
-        "printer_body",
-        "printer_screen",
-        "printer_buttons",
-        "printer_tray"
+        "printer_body", "printer_screen", "printer_buttons", "printer_tray"
     ]);
     if (printerGroup) {
         interaction.register(printerGroup.name, onPrinterClick);
-        console.log('Registered printer group:', printerGroup);
-    } else {
-    console.warn("Printer not found!");
-    }
+    } 
 
     const phoneGroup = createGroup(roomModel, "phone", [
-        "telephone_body",
-        "telephone_miscellaneous",
-        "telephone_receiver",
+        "telephone_body", "telephone_miscellaneous", "telephone_receiver",
     ]);
     if (phoneGroup) {
         interaction.register(phoneGroup.name, onPhoneClick);
-        console.log('Registered phone group:', phoneGroup);
-    } else {
-        console.warn("Phone not found!");
-    }
+    } 
 
     const laptopGroup = createGroup(roomModel, "laptop", [
         "laptop",
     ]);
     if (laptopGroup) {
-        interaction.register(laptopGroup.name, () => onPcClick({ camera, controls }));
-        console.log('Registered laptop group:', laptopGroup);
-    } else {
-        console.warn("Laptop not found!");
-    }
+        // 🟢 NEW: Pass 'cssRenderer' to the interaction
+        interaction.register(laptopGroup.name, () => onPcClick({ camera, controls, scene, cssRenderer }));
+    } 
 
     // Audio setup
     audioManager.setupCameraListener(camera);
-   
     audioManager.startRainStream();
 
     const windowTargetPos = new THREE.Vector3();     
@@ -165,7 +121,6 @@ export async function setUpScene() {
     if (windowMesh) {
         windowMesh.getWorldPosition(windowTargetPos); 
     } else {
-        console.warn("Window glass mesh not found! Defaulting to manual position.");
         windowTargetPos.set(-6, 5, 12); 
     }
     
@@ -177,6 +132,9 @@ export async function setUpScene() {
         (delta, now) => {
             audioManager.updateRainVolume(camera.position, windowTargetPos);
             if (rainGroup.userData.tick) rainGroup.userData.tick(delta);
+            
+            // 🟢 NEW: Update the CSS Renderer
+            cssRenderer.render(scene, camera);
         }
     ], composer);
 }
@@ -185,13 +143,13 @@ function handleCarMovement(car, delta) {
     car.updateMotion(inputState, delta);
 }
 
-function addWindowResizeEventListener(camera, renderer) {
+// 🟢 NEW: Updated Resize Handler
+function addWindowResizeEventListener(camera, renderer, cssRenderer) {
     window.addEventListener('resize', () => {
         camera.aspect = window.innerWidth / window.innerHeight;
         camera.updateProjectionMatrix();
         renderer.setSize(window.innerWidth, window.innerHeight);
+        // Resize CSS Renderer too
+        if(cssRenderer) cssRenderer.setSize(window.innerWidth, window.innerHeight);
     });
 }
-
-
-

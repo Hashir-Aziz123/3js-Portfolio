@@ -1,167 +1,291 @@
 import * as THREE from 'three';
 import gsap from 'gsap';
+import { CSS3DObject } from 'three/examples/jsm/renderers/CSS3DRenderer.js';
 
-// Store the "Room View" position to return to later
+// 🟢 NEW: Import the RectAreaLight
+import { laptopScreenLight } from '../../scene/lights'; 
+
+// ---------------------------------------------------------
+// 1. DATA
+// ---------------------------------------------------------
+const projects = [
+    {
+        title: "Pakistan Heat Risk AI",
+        description: "A decision support system for predicting health risks from heat events in Pakistan using Machine Learning.",
+        stack: ["Python", "Scikit-Learn", "Data Science"],
+        image: "https://placehold.co/600x400/282828/FFF?text=Heat+Risk+AI" 
+    },
+    {
+        title: "Temporal Illusions",
+        description: "Data visualization dashboard demonstrating the deceptive nature of time-series aggregation on electricity data.",
+        stack: ["D3.js", "React", "Data Viz"],
+        image: "https://placehold.co/600x400/282828/FFF?text=Temporal+Viz"
+    },
+    {
+        title: "Fluid & Fire Sim",
+        description: "Interactive simulation tool built with p5.js for educational fluid and fire dynamics.",
+        stack: ["p5.js", "Simulation", "Creative Coding"],
+        image: "https://placehold.co/600x400/282828/FFF?text=Fluid+Sim"
+    }
+];
+
+let cssObject = null;
 let initialCameraState = null;
+let currentProjectIndex = 0;
 
-export default function onPcClick({ camera, controls }) {
+export default function onPcClick({ camera, controls, scene, cssRenderer }) {
     console.log('💻 Entering Work Mode...');
 
-    if (!controls || !camera) return;
+    const anchorMesh = scene.getObjectByName("screenGlowLayer");
+    if(anchorMesh && anchorMesh.material) {
+        anchorMesh.material.transparent = true;
+        anchorMesh.material.opacity = 0; 
+    }
 
-    // 1. Save the current position so we can "Exit" later
+    // 🟢 LIGHT FIX: Warm Amber Color & Reduced Intensity
+    if (laptopScreenLight) {
+        laptopScreenLight.color.setHex(0xffaa55); // Warm Tungsten/Orange
+        // Lower intensity to remove the "Halo" glare
+        gsap.to(laptopScreenLight, { intensity: 2.5, duration: 2.0, ease: "power2.out" });
+    }
+
     if (!initialCameraState) {
         initialCameraState = {
             position: camera.position.clone(),
-            target: controls.target.clone() // Where the camera is looking
+            target: controls.target.clone()
         };
     }
-
-    // 2. Disable OrbitControls (Lock the view)
     controls.enabled = false;
 
-    // 3. Define the "Chair View" coordinates
-    // TIP: Manually move your camera to the perfect spot in the app, 
-    // log `camera.position` and `controls.target`, and copy those numbers here.
-    const targetPosition = { x: -2.7, y: 4.3, z: 3.2 }; // Example: Just in front of desk
-    const targetLookAt = { x: -1, y: 4.24, z: 3.94 };      // Example: Looking at laptop screen _Vector3 {x: -0.9983800502442792, y: 4.241992511014129, z: 3.9428896622459364, _gsap: GSCache2}
-
-    // 4. GSAP Animation Timeline
-    // We animate the Camera Position AND the Controls Target simultaneously
-    const tl = gsap.timeline({
+    gsap.to(camera.position, { 
+        x: -1.7, y: 4.3, z: 3.6, 
+        duration: 1.5, 
+        ease: "power2.inOut" 
+    });
+    
+    gsap.to(controls.target, { 
+        x: -1, y: 4.1, z: 3.94, 
+        duration: 1.5, 
+        ease: "power2.inOut",
+        onUpdate: () => controls.update(),
         onComplete: () => {
-            console.log("✅ Camera Locked. Showing UI.");
-            showLaptopUI(camera, controls); // Launch the overlay
+            spawnMinimalScreen(scene, camera, controls, anchorMesh);
         }
     });
-
-    // Animate Position
-    tl.to(camera.position, {
-        x: targetPosition.x,
-        y: targetPosition.y,
-        z: targetPosition.z,
-        duration: 1.5,
-        ease: "power2.inOut" // The "Premium" smooth feel
-    }, 0);
-
-    // Animate Rotation (via controls.target)
-    tl.to(controls.target, {
-        x: targetLookAt.x,
-        y: targetLookAt.y,
-        z: targetLookAt.z,
-        duration: 1.5,
-        ease: "power2.inOut",
-        onUpdate: () => controls.update() // Important: Update controls every frame
-    }, 0);
 }
 
-// --- THE OVERLAY UI ---
-function showLaptopUI(camera, controls) {
+function spawnMinimalScreen(scene, camera, controls, anchorMesh) {
+    if (cssObject) return;
+
     const div = document.createElement('div');
-    div.id = 'laptop-interface';
     
-    // This styling mimics the "Fake Screen" approach
-    // It covers the whole screen but we will center the content
-    // to match where the 3D laptop is.
-    div.style.cssText = `
-        position: fixed;
-        top: 0; left: 0; width: 100%; height: 100%;
-        z-index: 10;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        pointer-events: none; /* Let clicks pass through to edges */
-    `;
-
+    // 🟢 THEME: "Gruvbox" Retro (Warm, Cozy, Homy)
     div.innerHTML = `
-        <div style="
-            width: 800px; height: 500px;
-            background: rgba(10, 15, 20, 0.95);
-            border: 2px solid #333;
-            border-radius: 8px;
-            pointer-events: auto; 
-            padding: 20px;
-            color: #0f0;
-            font-family: 'Courier New', monospace;
-            box-shadow: 0 0 50px rgba(0,0,0,0.5);
-            display: flex;
-            flex-direction: column;
-            opacity: 0; /* Start hidden for fade-in */
-            transform: scale(0.95);
-        " id="screen-content">
+        <div id="screen-content" style="
+            width: 1100px; 
+            height: 695px; 
             
-            <div style="border-bottom: 1px solid #333; padding-bottom: 10px; margin-bottom: 20px; display: flex; justify-content: space-between;">
-                <span>root@hashir-portfolio:~/projects</span>
-                <button id="exit-btn" style="background: red; border: none; color: white; cursor: pointer; padding: 2px 8px;">X</button>
+            /* Warm Dark Grey Background (Cozy) */
+            background-color: #282828; 
+            
+            /* Subtle paper-like grain */
+            background-image: linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+            background-size: 20px 20px;
+
+            border: 8px solid #1d2021; 
+            box-sizing: border-box;
+            color: #ebdbb2; /* Cream/Off-White Text */
+
+            font-family: 'Courier New', monospace; 
+            border-radius: 16px; 
+            overflow: hidden;
+            
+            display: flex; flex-direction: column;
+            padding: 60px;
+            pointer-events: auto;
+            
+            backface-visibility: hidden;
+            transform-style: preserve-3d;
+            outline: 1px solid transparent; 
+        ">
+            <div style="
+                display:flex; justify-content:space-between; align-items: center;
+                margin-bottom: 50px;
+                border-bottom: 2px solid #3c3836;
+                padding-bottom: 20px;
+            ">
+                <div style="display:flex; align-items:center; gap:10px;">
+                    <span style="color:#fabd2f; font-size:20px;">●</span>
+                    <span style="
+                        font-size: 18px; color: #a89984; 
+                        font-weight: bold; letter-spacing: 1px;
+                    ">HASHIR_PORTFOLIO.EXE</span>
+                </div>
+                
+                <button id="exit-btn" style="
+                    background: #cc241d; /* Retro Red */
+                    border: 2px solid #1d2021; color: #ebdbb2; 
+                    font-size: 18px; width: 40px; height: 40px; border-radius: 8px;
+                    cursor: pointer; display: flex; align-items: center; justify-content: center;
+                    transition: all 0.2s; font-weight: bold;
+                ">X</button>
+            </div>
+            
+            <div style="flex-grow:1; display:flex; gap: 60px; align-items: center;">
+                <div style="
+                    width: 50%; height: 350px; 
+                    background: #1d2021; 
+                    border-radius: 4px; 
+                    overflow: hidden;
+                    border: 4px solid #3c3836;
+                    box-shadow: 5px 5px 0px #1d2021; /* Retro Shadow */
+                ">
+                    <img id="p-img" src="" style="width:100%; height:100%; object-fit:cover; opacity: 0.9; filter: sepia(0.2);">
+                </div>
+                
+                <div style="width: 50%; display: flex; flex-direction: column; justify-content: center;">
+                    <h1 id="p-title" style="
+                        margin: 0 0 25px 0; 
+                        font-size: 44px; 
+                        font-weight: 700; 
+                        color: #fe8019; /* Retro Orange */
+                        letter-spacing: -1px;
+                    ">Loading...</h1>
+                    
+                    <p id="p-desc" style="
+                        font-size: 22px; 
+                        color: #d5c4a1; /* Warm Grey */
+                        line-height: 1.5; 
+                        margin-bottom: 40px;
+                        font-weight: 500;
+                    ">...</p>
+                    
+                    <div id="p-stack" style="display:flex; gap: 12px; flex-wrap: wrap;"></div>
+                </div>
             </div>
 
-            <div style="flex-grow: 1; display: flex; gap: 20px;">
-                <div style="width: 40%; background: #000;">
-                    <img src="https://placehold.co/300x200/000/FFF" style="width: 100%; height: 100%; object-fit: cover; opacity: 0.5;">
-                </div>
-                <div style="width: 60%;">
-                    <h2 style="margin-top: 0; color: #fff;">Project: Heat Risk AI</h2>
-                    <p style="font-size: 0.9rem; color: #aaa;">A decision support system for predicting health risks from heat events in Pakistan.</p>
-                    <div style="margin-top: 20px;">
-                        <span style="background: #222; padding: 4px 8px; font-size: 0.8rem; border-radius: 4px;">Python</span>
-                        <span style="background: #222; padding: 4px 8px; font-size: 0.8rem; border-radius: 4px;">Machine Learning</span>
-                    </div>
-                </div>
-            </div>
-
-            <div style="margin-top: auto; display: flex; justify-content: space-between; padding-top: 20px;">
-                <button style="background: transparent; border: 1px solid #333; color: #fff; padding: 5px 15px; cursor: pointer;">&lt; PREV</button>
-                <button style="background: transparent; border: 1px solid #333; color: #fff; padding: 5px 15px; cursor: pointer;">NEXT &gt;</button>
+            <div style="
+                margin-top: auto; 
+                display: flex; gap: 20px; 
+                align-items: center; justify-content: flex-end;
+            ">
+                <button id="prev-btn" style="
+                    background: #3c3836; 
+                    border: none; 
+                    color: #ebdbb2; 
+                    padding: 14px 35px; font-size: 16px; border-radius: 6px; 
+                    cursor: pointer; font-weight: bold; font-family: inherit;
+                    transition: all 0.2s;
+                ">< PREV</button>
+                
+                <button id="next-btn" style="
+                    background: #fabd2f; /* Retro Yellow */
+                    border: none; 
+                    color: #282828; 
+                    padding: 14px 40px; font-size: 16px; border-radius: 6px; 
+                    cursor: pointer; font-weight: 900; font-family: inherit;
+                    box-shadow: 0 4px 0px #d79921; /* 3D Button Press feel */
+                    transition: all 0.1s;
+                ">NEXT ></button>
             </div>
         </div>
     `;
 
-    document.body.appendChild(div);
+    cssObject = new CSS3DObject(div);
+    scene.add(cssObject);
 
-    // Fade In Animation (CSS via GSAP)
-    gsap.to("#screen-content", { opacity: 1, scale: 1, duration: 0.5 });
+    // Exact Coordinates
+    cssObject.position.set(-0.75, 4.095, 4.218); 
+    cssObject.rotation.set(0.3, Math.PI + 1.207, 0.28); 
+    cssObject.scale.set(0.001, 0.001, 0.001); 
 
-    // --- EXIT LOGIC ---
-    document.getElementById('exit-btn').addEventListener('click', () => {
-        // 1. Fade out UI
-        gsap.to("#screen-content", { 
-            opacity: 0, 
-            scale: 0.95, 
-            duration: 0.3, 
-            onComplete: () => {
-                div.remove();
-                exitWorkMode(camera, controls); // Reverse the camera move
-            }
+    updateProjectView(div);
+
+    setTimeout(() => {
+        const next = div.querySelector('#next-btn');
+        const prev = div.querySelector('#prev-btn');
+        const exit = div.querySelector('#exit-btn');
+        
+        // Button Animations (Physical Click Feel)
+        next.addEventListener('pointerdown', () => { 
+            next.style.transform = 'translateY(4px)'; // Press down
+            next.style.boxShadow = '0 0 0 #d79921';
+            
+            setTimeout(() => {
+                next.style.transform = 'translateY(0)';
+                next.style.boxShadow = '0 4px 0 #d79921';
+                currentProjectIndex = (currentProjectIndex + 1) % projects.length;
+                updateProjectView();
+            }, 100);
         });
-    });
+        
+        prev.addEventListener('pointerdown', () => {
+            currentProjectIndex = (currentProjectIndex - 1 + projects.length) % projects.length;
+            updateProjectView();
+        });
+        
+        exit.addEventListener('pointerdown', () => {
+            exitWorkMode(scene, camera, controls, anchorMesh);
+        });
+    }, 100);
 }
 
-function exitWorkMode(camera, controls) {
-    if (!initialCameraState) return;
+function updateProjectView(container = null) {
+    const content = container ? container.querySelector('#screen-content') : document.getElementById('screen-content');
+    if(!content) return;
 
-    console.log("Returning to Room View...");
+    const p = projects[currentProjectIndex];
+    
+    content.querySelector('#p-title').innerText = p.title;
+    content.querySelector('#p-desc').innerText = p.description;
+    
+    const img = content.querySelector('#p-img');
+    img.src = p.image;
+    
+    // Retro Pill Tags
+    const stackHTML = p.stack.map(s => 
+        `<span style="
+            border: 2px solid #689d6a; /* Retro Aqua/Green */
+            color: #8ec07c;            
+            padding: 6px 16px; 
+            border-radius: 50px; 
+            font-size: 14px; 
+            font-weight: 700;
+            background: rgba(40, 40, 40, 0.5);
+        ">${s}</span>`
+    ).join('');
+    content.querySelector('#p-stack').innerHTML = stackHTML;
+}
 
-    const tl = gsap.timeline({
-        onComplete: () => {
-            controls.enabled = true; // Unlock controls
-            console.log("Controls Unlocked.");
-        }
-    });
+function exitWorkMode(scene, camera, controls, anchorMesh) {
+    if (!cssObject) return;
 
-    tl.to(camera.position, {
-        x: initialCameraState.position.x,
-        y: initialCameraState.position.y,
-        z: initialCameraState.position.z,
-        duration: 1.2,
-        ease: "power2.inOut"
-    }, 0);
+    scene.remove(cssObject);
+    cssObject = null;
 
-    tl.to(controls.target, {
-        x: initialCameraState.target.x,
-        y: initialCameraState.target.y,
-        z: initialCameraState.target.z,
-        duration: 1.2,
-        ease: "power2.inOut",
-        onUpdate: () => controls.update()
-    }, 0);
+    controls.enabled = true;
+
+    // Turn OFF light
+    if (laptopScreenLight) {
+        gsap.to(laptopScreenLight, { intensity: 0, duration: 1.0 });
+    }
+
+    if(anchorMesh && anchorMesh.material) {
+        gsap.to(anchorMesh.material, { opacity: 0.8, duration: 1.0 });
+    }
+
+    if (initialCameraState) {
+        gsap.to(camera.position, { 
+            ...initialCameraState.position, 
+            duration: 1.2, 
+            ease: "power2.inOut" 
+        });
+        gsap.to(controls.target, { 
+            ...initialCameraState.target, 
+            duration: 1.2, 
+            ease: "power2.inOut",
+            onUpdate: () => controls.update()
+        });
+    }
 }

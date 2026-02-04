@@ -96,4 +96,8 @@ const phoneLight = new THREE.RectAreaLight(0xFF0000, 5, 0.15, 0.02);
 phoneLight.position.set(-1.16, 3.72, -4.8);
 phoneLight.rotation.y = Math.PI / 2;
 
-export {backgroundLight, moonLight, lampLight, windowBeam, moonLightTarget, beamTarget, printerLight, phoneLight, greenScreenMesh, redScreenMesh};
+const laptopScreenLight = new THREE.RectAreaLight(0x6666ff, 0, 1.0, 0.6);
+laptopScreenLight.position.set(-0.92, 4.115, 4.16); 
+laptopScreenLight.rotation.set(-0.3,  1.207 , 0.32);
+
+export {backgroundLight, moonLight, lampLight, windowBeam, moonLightTarget, beamTarget, printerLight, phoneLight, greenScreenMesh, redScreenMesh, laptopScreenLight};
