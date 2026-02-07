@@ -3,8 +3,8 @@ import * as THREE from 'three';
 const geometry = new THREE.PlaneGeometry(1., 0.61);
     const material = new THREE.MeshStandardMaterial({
         color: 0x000000,
-        emissive: new THREE.Color(0x0066ff), // The Blue Glow
-        emissiveIntensity: 2.0,
+        emissive: new THREE.Color(0x4488ff), // The Blue Glow
+        emissiveIntensity: 0.8,
         transparent: true,
         side: THREE.DoubleSide,
         opacity: 0.8 // Allows a bit of the 3D bezel to show through

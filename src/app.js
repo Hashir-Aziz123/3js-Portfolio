@@ -19,8 +19,8 @@ import animate from './systems/animate';
 import { createGroup } from './utils/createGroup';           
 import InteractionManager from './systems/interactions/interactionManager';
 
-import onPrinterClick from './systems/interactions/printerEvent';
-import onPhoneClick from './systems/interactions/phoneEvent';
+import onPrinterClick from './systems/interactions/printerInteraction';
+import onPhoneClick from './systems/interactions/phoneInteraction';
 import onPcClick from './systems/interactions/laptopInteraction';
 
 // Audio
