@@ -13,9 +13,11 @@ const room = new Promise((resolve, reject) =>{
 
             setupRoomShadows(roomScene);
 
-            const mesh = roomScene.getObjectByName('room_floor');
+ 
+
+            const floorMesh = roomScene.getObjectByName('room_floor');
             
-            if (mesh) {
+            if (floorMesh) {
                 // Load the normal map with proper settings
                 const normalMap = textureLoader.load('../../assets/textures/floor_diffuse_v4.png');
                 
@@ -32,23 +34,23 @@ const room = new Promise((resolve, reject) =>{
                 // normalMap.repeat.set(1, 1);
 
                 // Apply to material
-                mesh.material.normalMap = normalMap;
-                mesh.material.normalMapType = THREE.TangentSpaceNormalMap;
+                floorMesh.material.normalMap = normalMap;
+                floorMesh.material.normalMapType = THREE.TangentSpaceNormalMap;
                 
                 // Adjust strength - start subtle, increase if needed
-                mesh.material.normalScale.set(0.05, 0.05); // Try lower values first
+                floorMesh.material.normalScale.set(0.05, 0.05); // Try lower values first
                 
                 // Compute tangents if missing
-                if (!mesh.geometry.attributes.tangent) {
+                if (!floorMesh.geometry.attributes.tangent) {
                     console.log("⚠️ Tangents missing on floor. Computing them now...");
-                    mesh.geometry.computeTangents();
+                    floorMesh.geometry.computeTangents();
                 }
 
-                mesh.material.needsUpdate = true;
+                floorMesh.material.needsUpdate = true;
                 
                 console.log("✅ Normal map applied to floor");
             } else {
-                console.warn("⚠️ Floor mesh not found!");
+                console.warn("⚠️ Floor floorMesh not found!");
             }
             
             resolve(roomScene);
@@ -64,27 +66,34 @@ const room = new Promise((resolve, reject) =>{
 function setupRoomShadows(roomScene) {
     roomScene.traverse((child) => {
         if (child.isMesh) {
+            // 1. Upgrade Material (Keep your existing logic)
             if (!child.material.isMeshStandardMaterial) {
-                console.log(`Upgrading material for: ${child.name}`);
-                const oldMat = child.material;
-            
-                // Create a new Standard material preserving the old texture/color
-                child.material = new THREE.MeshStandardMaterial({
-                    map: oldMat.map,
-                    color: oldMat.color,
-                    transparent: oldMat.transparent,
-                    opacity: oldMat.opacity,
-                    side: oldMat.side || THREE.FrontSide,
-                    roughness: 1.0, 
-                    metalness: 0.0
-                });
+                 // ... (Your material upgrade code is fine) ...
+                 const oldMat = child.material;
+                 child.material = new THREE.MeshStandardMaterial({
+                     map: oldMat.map,
+                     color: oldMat.color,
+                     transparent: oldMat.transparent,
+                     opacity: oldMat.opacity,
+                     side: oldMat.side || THREE.FrontSide,
+                     roughness: 1.0, 
+                     metalness: 0.0
+                 });
             }
-            // Furniture, Walls, Floor
+
+            // 2. 🟢 THE FIX: Check for Lamp Paper FIRST
+            if (child.name === 'lamp_paper_body') {
+                console.log("👻 Ghost Mode Activated for:", child.name);
+                child.castShadow = false;     // NO shadow
+                child.receiveShadow = false;  // Don't receive either (cleaner look)
+                child.material.emissive.setHex(0xffaa33); // Glow on
+                child.material.side = THREE.DoubleSide; // Let light out both ways
+            } 
+            // 3. Apply Shadows to EVERYTHING ELSE
             else {
                 child.castShadow = true;
                 child.receiveShadow = true;
                 
-                // Fix wall striping
                 if (child.material) {
                     child.material.shadowSide = THREE.BackSide;
                 }

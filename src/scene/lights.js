@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 
 // Ambient Light
-const backgroundLight = new THREE.AmbientLight(0xffffff, 0.045); // keep it 0
+const backgroundLight = new THREE.AmbientLight(0xffffff, 0.05 ); // keep it 0.045
 
 // Moon Light
 const moonLight = new THREE.DirectionalLight(0xaaccff, 0.4);
@@ -47,8 +47,8 @@ windowBeam.target = beamTarget;
 
 
 // Lamp Light
-const lampLight = new THREE.PointLight(0xffaa33, 23, 20);
-lampLight.position.set(-11.5, 5.5, 5.6);
+const lampLight = new THREE.PointLight(0xffaa33, 25, 20);
+lampLight.position.set(-11.7, 5.2, 6);
 lampLight.castShadow = true;
 lampLight.shadow.bias = -0.00005;
 lampLight.shadow.normalBias = 0;

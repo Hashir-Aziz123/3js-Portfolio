@@ -19,7 +19,7 @@ import animate from './systems/animate';
 import { createGroup } from './utils/createGroup';           
 import InteractionManager from './systems/interactions/interactionManager';
 
-import onPrinterClick from './systems/interactions/printerInteraction';
+import onPrinterClick from './systems/interactions/printerInteraction.js';
 import onPhoneClick from './systems/interactions/phoneInteraction';
 import onPcClick from './systems/interactions/laptopInteraction';
 
@@ -61,7 +61,12 @@ export async function setUpScene() {
     scene.add(phoneLight)
     scene.add(redScreenMesh);
 
+    // for the lamp
     scene.add(laptopScreenLight);
+    
+
+    // const lampLightHelper = new THREE.PointLightHelper(lampLight, 0.2);
+    // scene.add(lampLightHelper);
 
     // const laptopLightHelper = new RectAreaLightHelper(laptopScreenLight);
     // scene.add(laptopLightHelper);
@@ -93,7 +98,7 @@ export async function setUpScene() {
         "printer_body", "printer_screen", "printer_buttons", "printer_tray"
     ]);
     if (printerGroup) {
-        interaction.register(printerGroup.name, onPrinterClick);
+        interaction.register(printerGroup.name, () => onPrinterClick({ scene, camera, controls }));
     } 
 
     const phoneGroup = createGroup(roomModel, "phone", [
