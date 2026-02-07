@@ -10,8 +10,8 @@ moonLight.position.set(-5, 6, 6);
 moonLight.castShadow = true;
 moonLight.shadow.mapSize.width = 1024;
 moonLight.shadow.mapSize.height = 1024;
-moonLight.shadow.bias = -0.00005;
-moonLight.shadow.normalBias = 0;
+moonLight.shadow.bias = -0.0001;
+moonLight.shadow.normalBias = 0.05;
 
 moonLight.shadow.camera.left = -6
 moonLight.shadow.camera.right = 6;
