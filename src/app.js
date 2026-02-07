@@ -100,7 +100,7 @@ export async function setUpScene() {
         "telephone_body", "telephone_miscellaneous", "telephone_receiver",
     ]);
     if (phoneGroup) {
-        interaction.register(phoneGroup.name, onPhoneClick);
+        interaction.register(phoneGroup.name, () =>  onPhoneClick({ camera, controls, scene }));
     } 
 
     const laptopGroup = createGroup(roomModel, "laptop", [

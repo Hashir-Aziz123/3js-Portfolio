@@ -50,7 +50,7 @@ class Car {
             return; 
         
         const iScaleX = 0.5, iScaleY = 0.5, iScaleZ = 0.5;
-        const iPositionX = -4, iPositionY = 2.2, iPositionZ = 0;
+        const iPositionX = -4, iPositionY = 2.08, iPositionZ = 0;
         
         this.model.scale.set(iScaleX, iScaleY, iScaleZ);
         this.model.position.set(iPositionX, iPositionY, iPositionZ);
