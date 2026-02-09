@@ -1,7 +1,9 @@
+import * as THREE from 'three';
 import gsap from 'gsap';
 import { CSS3DObject } from 'three/examples/jsm/renderers/CSS3DRenderer.js';
 import { laptopScreenLight } from '../../scene/lights'; 
 import { projects } from './projectsData.js'; 
+import audioManager from '../audioManager'; // 🟢 Import Audio Manager
 
 // Constants
 const CAMERA_CONFIG = {
@@ -31,6 +33,10 @@ export default function onPcClick({ camera, controls, scene, cssRenderer }) {
 
     const anchorMesh = scene.getObjectByName("screenGlowLayer");
     
+    // 🟢 AUDIO: Play Boot-up Sound
+    const laptopPos = new THREE.Vector3(SCREEN_CONFIG.position.x, SCREEN_CONFIG.position.y, SCREEN_CONFIG.position.z);
+    audioManager.playOneShot('laptop', laptopPos, 7.0);
+
     // Save initial camera position
     if (!state.initialCameraState) {
         state.initialCameraState = {
@@ -83,13 +89,11 @@ function animateCameraToNormalMode(camera, controls) {
 
 // ==================== VISUAL EFFECTS ====================
 function applyWorkModeEffects(scene, anchorMesh) {
-    // Fade out anchor mesh
     if (anchorMesh?.material) {
         anchorMesh.material.transparent = true;
         gsap.to(anchorMesh.material, { opacity: 0, duration: 0.5 });
     }
 
-    // Warm up laptop screen light
     if (laptopScreenLight) {
         laptopScreenLight.color.setHex(0xffaa55);
         gsap.to(laptopScreenLight, { 
@@ -101,12 +105,10 @@ function applyWorkModeEffects(scene, anchorMesh) {
 }
 
 function removeWorkModeEffects(anchorMesh) {
-    // Restore laptop light
     if (laptopScreenLight) {
         gsap.to(laptopScreenLight, { intensity: 0, duration: 1.0 });
     }
 
-    // Restore anchor mesh
     if (anchorMesh?.material) {
         gsap.to(anchorMesh.material, { opacity: 0.8, duration: 1.0 });
     }
@@ -114,12 +116,11 @@ function removeWorkModeEffects(anchorMesh) {
 
 // ==================== PROJECT SCREEN CREATION ====================
 function createProjectScreen(scene, camera, controls, anchorMesh) {
-    if (state.cssObject) return; // Already exists
+    if (state.cssObject) return; 
 
     const container = createScreenContainer();
     state.cssObject = new CSS3DObject(container);
     
-    // Position and rotate the screen
     state.cssObject.position.set(
         SCREEN_CONFIG.position.x, 
         SCREEN_CONFIG.position.y, 
@@ -138,10 +139,8 @@ function createProjectScreen(scene, camera, controls, anchorMesh) {
 
     scene.add(state.cssObject);
 
-    // Fade in animation
     gsap.to(container, { opacity: 1, duration: 0.8, ease: "power2.inOut" });
 
-    // Attach event listeners after DOM is ready
     setTimeout(() => attachEventListeners(container, scene, camera, controls, anchorMesh), 100);
 }
 
@@ -368,13 +367,26 @@ function attachEventListeners(container, scene, camera, controls, anchorMesh) {
     const prevBtn = container.querySelector('#prev-btn');
     const exitBtn = container.querySelector('#exit-btn');
 
-    nextBtn.addEventListener('pointerdown', () => handleNextProject(nextBtn));
-    prevBtn.addEventListener('pointerdown', () => handlePrevProject());
-    exitBtn.addEventListener('pointerdown', () => handleExitWorkMode(scene, camera, controls, anchorMesh));
+    nextBtn.addEventListener('pointerdown', () => {
+        // 🟢 AUDIO: UI Click
+        audioManager.playOneShot('click', null, 0.5);
+        handleNextProject(nextBtn);
+    });
+
+    prevBtn.addEventListener('pointerdown', () => {
+        // 🟢 AUDIO: UI Click
+        audioManager.playOneShot('click', null, 0.5);
+        handlePrevProject();
+    });
+
+    exitBtn.addEventListener('pointerdown', () => {
+        // 🟢 AUDIO: UI Click
+        audioManager.playOneShot('click', null, 0.5);
+        handleExitWorkMode(scene, camera, controls, anchorMesh);
+    });
 }
 
 function handleNextProject(button) {
-    // Button press animation
     button.style.transform = 'translateY(6px)';
     button.style.boxShadow = '0 0 0 #d79921';
 
@@ -395,17 +407,10 @@ function handlePrevProject() {
 function handleExitWorkMode(scene, camera, controls, anchorMesh) {
     if (!state.cssObject) return;
 
-    // Remove screen
     scene.remove(state.cssObject);
     state.cssObject = null;
-
-    // Re-enable controls
     controls.enabled = true;
-
-    // Restore visual effects
     removeWorkModeEffects(anchorMesh);
-
-    // Return camera to original position
     animateCameraToNormalMode(camera, controls);
 }
 
@@ -416,7 +421,6 @@ function updateProjectDisplay() {
 
     const project = projects[state.currentProjectIndex];
     
-    // Update all content
     updateElement(content, '#p-title', project.title);
     updateElement(content, '#p-desc', project.description);
     updateElement(content, '#p-img', project.image, true);
@@ -427,18 +431,15 @@ function updateElement(container, selector, value, isImage = false) {
     const element = container.querySelector(selector);
     if (!element) return;
 
-    // Kill any animations/transitions on this element
     element.style.transition = 'none';
     element.style.animation = 'none';
     
     if (isImage) {
         element.src = value;
     } else {
-        // Use textContent for instant update with no reflow
         element.textContent = value;
     }
     
-    // Force browser to apply changes immediately
     void element.offsetHeight;
 }
 

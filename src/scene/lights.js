@@ -47,7 +47,7 @@ windowBeam.target = beamTarget;
 
 
 // Lamp Light
-const lampLight = new THREE.PointLight(0xffaa33, 25, 20);
+const lampLight = new THREE.PointLight(0xffaa33, 20, 20);
 lampLight.position.set(-11.7, 5.2, 6);
 lampLight.castShadow = true;
 lampLight.shadow.bias = -0.00005;

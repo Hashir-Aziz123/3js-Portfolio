@@ -22,6 +22,7 @@ import InteractionManager from './systems/interactions/interactionManager';
 import onPrinterClick from './systems/interactions/printerInteraction.js';
 import onPhoneClick from './systems/interactions/phoneInteraction';
 import onPcClick from './systems/interactions/laptopInteraction';
+import onLampClick from './systems/interactions/lampInteraction.js';
 
 // Audio
 import audioManager from './systems/audioManager';
@@ -112,9 +113,16 @@ export async function setUpScene() {
         "laptop",
     ]);
     if (laptopGroup) {
-        // 🟢 NEW: Pass 'cssRenderer' to the interaction
+ 
         interaction.register(laptopGroup.name, () => onPcClick({ camera, controls, scene, cssRenderer }));
     } 
+
+    const lampGroup = createGroup(roomModel, "lamp_structure", [
+    "lamp_paper_body", "lamp_frame"
+    ]);
+    if (lampGroup) {
+        interaction.register(lampGroup.name, () => onLampClick({ scene }));
+    }
 
     // Audio setup
     audioManager.setupCameraListener(camera);

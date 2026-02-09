@@ -47,7 +47,7 @@ class AudioManager {
             console.log("⏳ Loading Audio Buffers...");
             
             const [click, pSlide, pGrab, ring, pickup, laptop] = await Promise.all([
-                loadBuffer('/assets/audio/select-sound.mp3'),
+                loadBuffer('/assets/audio/mouse_click_2.mp3'),
                 loadBuffer('/assets/audio/printer-sound.mp3'),
                 loadBuffer('/assets/audio/paper-grab.mp3'),
                 loadBuffer('/assets/audio/phone.mp3'),
