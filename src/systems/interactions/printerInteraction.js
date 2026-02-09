@@ -1,28 +1,26 @@
 import * as THREE from 'three';
 import gsap from 'gsap';
+import audioManager from '../audioManager';
 
 // ==================== CONFIGURATION ====================
 const PAPER_CONFIG = {
-    // Verified Coordinates 
     initialPosition: { x: -1.4, y: 3.755, z: -3.7 }, 
     initialRotation: { x: -Math.PI / 2, y: -0.1, z: Math.PI / 2 }, 
     
     size: { width: 0.35, height: 0.55 }, 
     
-    // Animation Settings
     ejectAxis: 'x', 
     ejectDistance: 0.4, 
     animationDuration: 1.2,
 
-    // Files
     resumeUrl: '/assets/PDFs/Hashir_Resume.pdf', 
     fileName: 'Hashir_Aziz_Resume.pdf',
     textureUrl: '/assets/images/cv.png' 
 };
 
 const CAMERA_VIEW = {
-    position: { x: -2.5, y: 4.52, z: -4.5 }, // Top-down view
-    target: { x: -1.4, y: 3.755, z: -3.7 }   // Look at paper tray
+    position: { x: -2.5, y: 4.52, z: -4.5 }, 
+    target: { x: -1.4, y: 3.755, z: -3.7 }   
 };
 
 // ==================== STATE ====================
@@ -40,7 +38,6 @@ export default function onPrinterClick({ scene, camera, controls }) {
     isPrinting = true;
     console.log('🖨️ Printer Sequence Initiated...');
 
-    // Save Camera State
     if (!initialCameraState) {
         initialCameraState = {
             position: camera.position.clone(),
@@ -49,7 +46,6 @@ export default function onPrinterClick({ scene, camera, controls }) {
     }
     controls.enabled = false;
 
-    // Execute Sequence
     const tl = gsap.timeline();
 
     // 1. Camera Swoop
@@ -73,18 +69,24 @@ export default function onPrinterClick({ scene, camera, controls }) {
     tl.to(paperMesh.position, {
         [PAPER_CONFIG.ejectAxis]: targetPos[PAPER_CONFIG.ejectAxis],
         duration: PAPER_CONFIG.animationDuration,
-        ease: "power2.out"
+        ease: "power2.out",
+        onStart: () => {
+            audioManager.playOneShot('printer_slide', paperMesh.position, 2.5);
+        }
     }, "-=0.5"); 
 
-    // 3. Pause for Effect
-    tl.to({}, { duration: 0.5 });
+    // 3. Pause
+    tl.to({}, { duration: 1 });
 
-    // 4. Hand-Off (Float Up & Fade)
+    // 4. Hand-Off
     tl.to(paperMesh.position, {
         y: targetPos.y + 0.3,
         x: targetPos.x - 0.1,
         duration: 0.8,
-        ease: "back.in(1.7)"
+        ease: "back.in(1.7)",
+        onStart: () => {
+            audioManager.playOneShot('printer_grab', paperMesh.position, 4);
+        }
     }, "handoff");
 
     tl.to(paperMesh.material, {
@@ -139,7 +141,6 @@ function createPaper(scene) {
 }
 
 function resetSystem(camera, controls, mesh) {
-    // Return Camera
     gsap.to(camera.position, {
         ...initialCameraState.position,
         duration: 1.5,
@@ -157,7 +158,6 @@ function resetSystem(camera, controls, mesh) {
         }
     });
 
-    // Reset Paper State (Invisible Snap-back)
     setTimeout(() => {
         mesh.position.set(
             PAPER_CONFIG.initialPosition.x, 

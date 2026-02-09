@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import gsap from 'gsap';
 import { CSS3DObject } from 'three/examples/jsm/renderers/CSS3DRenderer.js';
+import audioManager  from '../audioManager.js';
 
 // Constants
 const PHONE_VIEW = {
@@ -11,7 +12,6 @@ const PHONE_VIEW = {
 const CONTACT_CONFIG = {
     position: { x: -1.2, y: 3.9, z: -3.8 },
     rotation: { x: 0, y: Math.PI / 4 + Math.PI - 0.2, z: 0 },
-    // 🟢 FIX 1: Halve the scale to compress pixels (Higher Density)
     scale: 0.001, 
     email: "hashiraziz123@gmail.com"
 };
@@ -38,12 +38,21 @@ export default function onPhoneClick({ camera, controls, scene }) {
         };
     }
 
+    const phonePos = new THREE.Vector3(CONTACT_CONFIG.position.x, CONTACT_CONFIG.position.y, CONTACT_CONFIG.position.z);
+    const ringSound = audioManager.playOneShot('phone_ring', phonePos, 2.5);
+
     animateCameraToPhone(camera, controls, () => {
+
+        if (ringSound && ringSound.isPlaying) {
+            ringSound.stop();
+        }
+        audioManager.playOneShot('phone_pickup', phonePos, 3.5);
+
         createContactInterface(scene, camera, controls);
     });
 }
 
-// ... (Camera Animations remain exactly the same) ...
+
 function animateCameraToPhone(camera, controls, onComplete) {
     controls.enabled = false;
     gsap.to(camera.position, { ...PHONE_VIEW.position, duration: ANIMATION_CONFIG.duration, ease: ANIMATION_CONFIG.ease });
@@ -56,7 +65,7 @@ function animateCameraToNormalMode(camera, controls) {
     gsap.to(controls.target, { ...state.initialCameraState.target, duration: ANIMATION_CONFIG.duration, ease: ANIMATION_CONFIG.ease, onUpdate: () => controls.update() });
 }
 
-// ... (Interface Creation remains the same) ...
+
 function createContactInterface(scene, camera, controls) {
     if (state.cssObject) return;
     const container = createContactContainer();
@@ -77,7 +86,7 @@ function createContactContainer() {
     return container;
 }
 
-// ==================== HTML GENERATION (UPDATED FOR 2X RES) ====================
+// ==================== HTML GENERATION ====================
 
 function generateContactHTML() {
     return `
@@ -91,7 +100,6 @@ function generateContactHTML() {
 }
 
 function getContainerStyles() {
-    // 🟢 FIX 2: Double all dimensions
     return `
         width: 1040px; 
         padding: 90px;
@@ -118,7 +126,6 @@ function generateHeaderHTML() {
             display: flex; 
             justify-content: space-between; 
             align-items: center;
-            /* 🟢 FIX 3: Double the Z-depth to match new scale */
             transform: translateZ(120px);
         ">
             <span style="
@@ -202,7 +209,7 @@ function generateFooterHTML() {
     `;
 }
 
-// ==================== STYLE HELPERS (2X) ====================
+// ==================== STYLE HELPERS ====================
 function getNameStyles() {
     return `
         margin: 0; 
@@ -262,7 +269,10 @@ function attachEventListeners(container, scene, camera, controls) {
     });
 
     emailBtn.addEventListener('pointerdown', () => handleEmailCopy(emailBtn));
-    hangupBtn.addEventListener('pointerdown', () => handleDisconnect(scene, camera, controls));
+    hangupBtn.addEventListener('pointerdown', () => {
+        audioManager.playOneShot('phone_pickup', null, 0.8);
+        handleDisconnect(scene, camera, controls)
+    });
     
     hangupBtn.onmouseenter = () => {
         hangupBtn.style.backgroundColor = '#504945';

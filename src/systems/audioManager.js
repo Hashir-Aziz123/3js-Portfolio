@@ -1,12 +1,5 @@
 import * as THREE from 'three';
 
-/*
-    Listener: Attached to the camera
-    Rain: Positional audio (Web Audio API) - Loaded into RAM for 3D physics.
-    Music: Global audio (HTML5 Streaming) - Streamed from disk to save RAM.
-    SFX: Positional audio - Loaded into RAM for low latency.
-*/
-
 class AudioManager {
 
     constructor() {
@@ -14,25 +7,34 @@ class AudioManager {
         this.loader = new THREE.AudioLoader();
 
         // Systems
-        this.rainAudio = null;
-        this.musicTracks = [];
-        this.currentTrackIndex = 0;
-        
-        // Changed: We now track the HTML Audio Element instead of a THREE.Audio source
-        this.currentStream = null; 
+        this.currentMusicStream = null;
+        this.rainStream = null;
 
         // State
-        this.isMuted = false;
         this.masterVolume = 1.0;
+        this.sfxVolume = 0.6; 
 
-        // Buffers (Only for 3D sounds)
+        // RAM Buffers
         this.buffers = {
             click: null,
-            rain: null,
+            printer_slide: null, 
+            printer_grab: null,  
+            phone_ring: null,      
+            phone_pickup: null,    
+            laptop: null        
         };
+
+        // Playlist
+        this.musicTracks = [
+            '/assets/audio/chill-lofi-ambient-lofi-music-457259.mp3',
+            '/assets/audio/cozy-lofi-background-music-for-study-457198.mp3',
+            '/assets/audio/chill-night-cozy-lofi-music-452693.mp3',
+            '/assets/audio/good-night-lofi-cozy-chill-music-160166.mp3'
+        ];
+        this.currentTrackIndex = 0;
     }
 
-    // INITIALIZATION METHODS
+    // ==================== INITIALIZATION ====================
 
     setupCameraListener(camera){
         camera.add(this.listener);
@@ -40,154 +42,141 @@ class AudioManager {
 
     async loadAssets() {
         const loadBuffer = (path) => this.loader.loadAsync(path);
+
         try {
-            // 1. ONLY load the Click sound into RAM (It's tiny, <1MB)
-            const [clickBuf] = await Promise.all([
-                loadBuffer('/assets/audio/mouse-click-405462.mp3'),
+            console.log("⏳ Loading Audio Buffers...");
+            
+            const [click, pSlide, pGrab, ring, pickup, laptop] = await Promise.all([
+                loadBuffer('/assets/audio/select-sound.mp3'),
+                loadBuffer('/assets/audio/printer-sound.mp3'),
+                loadBuffer('/assets/audio/paper-grab.mp3'),
+                loadBuffer('/assets/audio/phone.mp3'),
+                loadBuffer('/assets/audio/phone-pick-up.mp3'),
+                loadBuffer('/assets/audio/bootup.mp3'),
             ]);
-            this.buffers.click = clickBuf;
 
-            // 2. Store Music Paths as Strings (Zero RAM cost until played)
-            this.musicTracks = [
-                '/assets/audio/chill-lofi-ambient-lofi-music-457259.mp3',
-                '/assets/audio/cozy-lofi-background-music-for-study-457198.mp3',
-                '/assets/audio/chill-night-cozy-lofi-music-452693.mp3',
-                '/assets/audio/good-night-lofi-cozy-chill-music-160166.mp3'
-            ];
+            this.buffers.click = click;
+            this.buffers.printer_slide = pSlide;
+            this.buffers.printer_grab = pGrab;
+            this.buffers.phone_ring = ring;   
+            this.buffers.phone_pickup = pickup;
+            this.buffers.laptop = laptop;
 
-            console.log("Audio assets loaded (Hybrid Mode).");
+            console.log("✅ Audio Assets Ready.");
         } 
         catch(err){
-            console.error("Error loading audio assets:", err);
+            console.error("❌ Error loading audio:", err);
         }
     }
 
-    startContext() {
-        if (this.listener.context.state === 'suspended') {
-            this.listener.context.resume();
+    // ==================== SFX SYSTEM ====================
+
+    /**
+     * Plays a sound at a specific 3D location.
+     * @param {string} id - Buffer ID
+     * @param {THREE.Vector3} position - World position
+     * @param {number} volumeScale - 0.0 to 1.0
+     * @returns {THREE.PositionalAudio | THREE.Audio} The sound object
+     */
+    playOneShot(id, position, volumeScale = 1.0) {
+        if (!this.buffers[id]) {
+            console.warn(`Audio buffer '${id}' not found.`);
+            return null;
         }
+
+        // Global Fallback if no position
+        if (!position) {
+            const sound = new THREE.Audio(this.listener);
+            sound.setBuffer(this.buffers[id]);
+            sound.setVolume(this.sfxVolume * volumeScale * this.masterVolume);
+            sound.play();
+            return sound;
+        }
+
+        // 3D Positional Audio
+        const sound = new THREE.PositionalAudio(this.listener);
+        sound.setBuffer(this.buffers[id]);
+        sound.setRefDistance(1.5);
+        sound.setVolume(this.sfxVolume * volumeScale * this.masterVolume);
+        
+        // Setup position
+        sound.position.copy(position);
+        
+        // Note: For perfect spatialization, this sound node should ideally be added 
+        // to the scene graph. However, for one-shots, Three.js often handles 
+        // the world matrix update if we play immediately.
+        sound.play();
+        
+        return sound;
     }
 
-    // RAIN SYSTEM (Remains Web Audio API for 3D Position)
+    playClickSound(object) {
+        if (!this.buffers.click) return;
+        const sound = new THREE.PositionalAudio(this.listener);
+        sound.setBuffer(this.buffers.click);
+        sound.setRefDistance(1);
+        sound.setVolume(1.0);
+        
+        // Attach to object for perfect tracking
+        object.add(sound);
+        sound.play();
+        sound.onEnded = () => object.remove(sound);
+    }
 
-    
+    // ==================== RAIN & MUSIC ====================
+
     startRainStream() {
-        // Create HTML Audio (No decoding to RAM)
         this.rainStream = new Audio('/assets/audio/heavy-raining-rain-on-tree-natural-clear-sound-abbas-ali-quiet-life-relaxing-music-11938.mp3');
         this.rainStream.loop = true;
         this.rainStream.volume = 0; 
         this.rainStream.play().catch(e => console.warn("Rain blocked:", e));
     }
 
-
     updateRainVolume(cameraPosition, windowPosition) {
         if (!this.rainStream) return;
-
         const distance = cameraPosition.distanceTo(windowPosition);
-        
         const maxDistance = 25; 
-        const maxVolume = 1 * this.masterVolume;
-
-        // Linear drop-off formula
         let volume = 1 - (distance / maxDistance);
-        volume = Math.max(0, Math.min(volume, maxVolume));
-
-        this.rainStream.volume = volume * this.masterVolume;
+        volume = Math.max(0, Math.min(volume, 1));
+        this.rainStream.volume = volume * 0.5 * this.masterVolume;
     }
- 
-
-    // MUSIC SYSTEM (Switched to HTML5 Streaming)
 
     playMusic() {
-        if (this.musicTracks.length === 0) {
-            console.warn("No music tracks loaded.");
-            return;
-        }
+        if (this.musicTracks.length === 0) return;
         this.playNextTrack();
     }
 
     playNextTrack() {
-        // Stop previous stream if it exists
-        if (this.currentStream) {
-            this.currentStream.pause();
-            this.currentStream.currentTime = 0;
-            this.currentStream = null;
+        if (this.currentMusicStream) {
+            this.currentMusicStream.pause();
+            this.currentMusicStream = null;
         }
 
         const path = this.musicTracks[this.currentTrackIndex];
-        
-        // Create new HTML Audio instance (Streams from file)
         const audio = new Audio(path);
         audio.loop = false;
-        audio.volume = 0; // Start silent for fade-in
+        audio.volume = 0;
 
-        // Play
-        audio.play().catch(e => console.warn("Autoplay blocked or stream failed:", e));
-        
-        // Save reference
-        this.currentStream = audio;
+        audio.play().catch(e => console.warn("Music blocked:", e));
+        this.currentMusicStream = audio;
 
-        // Handle Track End
         audio.onended = () => {
-            console.log("Track ended, playing next...");
             this.currentTrackIndex = (this.currentTrackIndex + 1) % this.musicTracks.length;
             this.playNextTrack();
         };
 
-        // Fade In (Target Volume: 0.1 * Master)
-        this.fadeStream(audio, 0, 0.1 * this.masterVolume, 2000);
+        this.fadeStream(audio, 0, 0.15 * this.masterVolume, 2000);
     }
 
-    // Custom Fader for HTML5 Audio (Since we can't use AudioContext nodes easily here)
     fadeStream(element, startVol, endVol, duration) {
         let startTime = null;
-
         const animate = (time) => {
             if (!startTime) startTime = time;
-            const elapsed = time - startTime;
-            const progress = Math.min(elapsed / duration, 1);
-
-            // Linear interpolation
+            const progress = Math.min((time - startTime) / duration, 1);
             element.volume = startVol + (endVol - startVol) * progress;
-
-            if (progress < 1) {
-                requestAnimationFrame(animate);
-            } else {
-                element.volume = endVol; // Ensure exact final value
-            }
+            if (progress < 1) requestAnimationFrame(animate);
         };
-        
         requestAnimationFrame(animate);
-    }
-
-    // SFX SYSTEM (Remains Web Audio API for low latency)
-
-    playSFX(type, position) {
-        if (!this.buffers[type]) return;
-
-        const sound = new THREE.PositionalAudio(this.listener);
-        sound.setBuffer(this.buffers[type]);
-        sound.setRefDistance(1);
-        sound.setVolume(0.5 * this.masterVolume);
-
-        sound.position.copy(position);
-        sound.play();
-    }
-
-    playClickSound(object) {
-        if (!this.buffers.click) return;
-
-        const sound = new THREE.PositionalAudio(this.listener);
-        sound.setBuffer(this.buffers.click);
-        sound.setRefDistance(1);
-        sound.setVolume(1.0);
-
-        object.add(sound);
-        sound.play();
-
-        sound.onEnded = () => {
-            object.remove(sound);
-        };
     }
 }
 
