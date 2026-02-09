@@ -88,8 +88,8 @@ export async function setUpScene() {
     rainGroup.rotation.y = Math.PI; 
     scene.add(rainGroup);
 
-    const rainHelper = new THREE.BoxHelper(rainGroup, 0xffff00); 
-    scene.add(rainHelper);
+    // const rainHelper = new THREE.BoxHelper(rainGroup, 0xffff00); 
+    // scene.add(rainHelper);
 
     // Setting up interactions
     const interaction = new InteractionManager(scene, camera, renderer.domElement);
