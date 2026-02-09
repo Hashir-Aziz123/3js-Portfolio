@@ -29,7 +29,7 @@ export default function onLampClick({ scene }) {
 
     console.log(`💡 Lamp switched ${isLampOn ? 'ON' : 'OFF'}`);
 
-    audioManager.playOneShot('phone_pickup', lampMesh.position, 2);
+    audioManager.playOneShot('phone_pickup', lampMesh.position, 2.5);
 
     // Animate Light Source (The room illumination)
     if (lampLight) {

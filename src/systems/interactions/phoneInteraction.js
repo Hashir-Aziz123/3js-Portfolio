@@ -13,7 +13,7 @@ const CONTACT_CONFIG = {
     position: { x: -1.2, y: 3.9, z: -3.8 },
     rotation: { x: 0, y: Math.PI / 4 + Math.PI - 0.2, z: 0 },
     scale: 0.001, 
-    email: "hashiraziz123@gmail.com"
+    email: "hashir14aziz@gmail.com"
 };
 
 const ANIMATION_CONFIG = {
@@ -166,7 +166,7 @@ function generateButtonsHTML() {
             display: flex; flex-direction: column; gap: 28px; margin-top: 10px;
             transform: translateZ(140px);
         ">
-            <a href="https://www.linkedin.com/in/hashir-aziz-b8529621b/" target="_blank" style="text-decoration: none;">
+            <a href="https://www.linkedin.com/in/hashir-aziz-aab28b281/" target="_blank" style="text-decoration: none;">
                 <button class="contact-btn" style="${getButtonStyles('linkedin')}">
                  
                     <span>LINKEDIN PROFILE</span>
