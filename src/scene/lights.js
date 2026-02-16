@@ -28,7 +28,7 @@ moonLightTarget.position.set(-4, 4, 0);
 moonLight.target = moonLightTarget;
 
 // window light -6, 5, 12
-const windowBeam = new THREE.SpotLight(0xddeeff, 40); // High intensity (50-100)
+const windowBeam = new THREE.SpotLight(0xaaccff, 100); // High intensity (50-100)
 windowBeam.position.set(-6, 5, 12); 
 windowBeam.distance = 20;
 windowBeam.angle = Math.PI / 3; // Narrow beam (30 degrees)
@@ -47,7 +47,7 @@ windowBeam.target = beamTarget;
 
 
 // Lamp Light
-const lampLight = new THREE.PointLight(0xffaa33, 20, 20);
+const lampLight = new THREE.PointLight(0xffaa33, 25, 20);
 lampLight.position.set(-11.7, 5.2, 6);
 lampLight.castShadow = true;
 lampLight.shadow.bias = -0.00005;
@@ -100,4 +100,8 @@ const laptopScreenLight = new THREE.RectAreaLight(0x6666ff, 0, 1.0, 0.6);
 laptopScreenLight.position.set(-0.92, 4.115, 4.16); 
 laptopScreenLight.rotation.set(-0.3,  1.207 , 0.32);
 
-export {backgroundLight, moonLight, lampLight, windowBeam, moonLightTarget, beamTarget, printerLight, phoneLight, greenScreenMesh, redScreenMesh, laptopScreenLight};
+
+const sideTableLight = new THREE.PointLight(0xaaccff, 0.3, 4);
+sideTableLight.position.set(-1.4, 5.5, -3.7);
+
+export {backgroundLight, moonLight, lampLight, windowBeam, moonLightTarget, beamTarget, printerLight, phoneLight, greenScreenMesh, redScreenMesh, laptopScreenLight, sideTableLight};

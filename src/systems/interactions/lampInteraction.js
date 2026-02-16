@@ -5,7 +5,7 @@ import audioManager from '../audioManager';
 
 // Configuration
 const LAMP_CONFIG = {
-    onIntensity: 20,   // Brightness when ON
+    onIntensity: 25,   // Brightness when ON
     offIntensity: 0.0,  // Brightness when OFF
     onEmissive: 1.0,    // Glow strength when ON
     offEmissive: 0.0,   // Glow strength when OFF

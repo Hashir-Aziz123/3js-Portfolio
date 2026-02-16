@@ -3,9 +3,8 @@ import gsap from 'gsap';
 import { CSS3DObject } from 'three/examples/jsm/renderers/CSS3DRenderer.js';
 import { laptopScreenLight } from '../../scene/lights'; 
 import { projects } from './projectsData.js'; 
-import audioManager from '../audioManager'; // 🟢 Import Audio Manager
+import audioManager from '../audioManager'; 
 
-// Constants
 const CAMERA_CONFIG = {
     work: { position: { x: -1.7, y: 4.3, z: 3.6 }, target: { x: -1, y: 4.1, z: 3.94 } },
     duration: 1.5,
@@ -20,24 +19,20 @@ const SCREEN_CONFIG = {
     height: 695
 };
 
-// State
 const state = {
     cssObject: null,
     initialCameraState: null,
     currentProjectIndex: 0
 };
 
-// ==================== MAIN ENTRY POINT ====================
 export default function onPcClick({ camera, controls, scene, cssRenderer }) {
     console.log('💻 Entering Work Mode...');
 
     const anchorMesh = scene.getObjectByName("screenGlowLayer");
     
-    // 🟢 AUDIO: Play Boot-up Sound
     const laptopPos = new THREE.Vector3(SCREEN_CONFIG.position.x, SCREEN_CONFIG.position.y, SCREEN_CONFIG.position.z);
     audioManager.playOneShot('laptop', laptopPos, 7.0);
 
-    // Save initial camera position
     if (!state.initialCameraState) {
         state.initialCameraState = {
             position: camera.position.clone(),
@@ -51,7 +46,6 @@ export default function onPcClick({ camera, controls, scene, cssRenderer }) {
     });
 }
 
-// ==================== CAMERA ANIMATIONS ====================
 function animateCameraToWorkMode(camera, controls, onComplete) {
     controls.enabled = false;
 
@@ -87,7 +81,6 @@ function animateCameraToNormalMode(camera, controls) {
     });
 }
 
-// ==================== VISUAL EFFECTS ====================
 function applyWorkModeEffects(scene, anchorMesh) {
     if (anchorMesh?.material) {
         anchorMesh.material.transparent = true;
@@ -114,7 +107,6 @@ function removeWorkModeEffects(anchorMesh) {
     }
 }
 
-// ==================== PROJECT SCREEN CREATION ====================
 function createProjectScreen(scene, camera, controls, anchorMesh) {
     if (state.cssObject) return; 
 
@@ -151,11 +143,12 @@ function createScreenContainer() {
     return container;
 }
 
-// ==================== HTML GENERATION ====================
 function generateScreenHTML(project) {
     return `
         <div id="screen-content" style="${getScreenStyles()}">
-            ${generateHeaderHTML()}
+            <button id="exit-btn" style="${getButtonStyles('exit')}">X</button>
+            <h1 style="${getMainHeadingStyles()}">Explore My Projects</h1>
+            <div style="width: 100%; height: 2px; background: #504945; margin-bottom: 20px;"></div>
             ${generateContentHTML(project)}
             ${generateFooterHTML()}
         </div>
@@ -177,60 +170,80 @@ function getScreenStyles() {
         overflow: hidden;
         display: flex; 
         flex-direction: column;
-        padding: 40px;
+        padding: 40px 50px 30px 50px;
         pointer-events: auto;
         backface-visibility: hidden;
         transform-style: preserve-3d;
         perspective: 1000px;
+        position: relative;
     `;
 }
 
-function generateHeaderHTML() {
+function getMainHeadingStyles() {
     return `
-        <div style="
-            display: flex; 
-            justify-content: space-between; 
-            align-items: center;
-            margin-bottom: 20px;
-            border-bottom: 3px solid #3c3836;
-            padding-bottom: 15px;
-        ">
-            <div style="display: flex; align-items: center; gap: 15px;">
-                <span style="color: #fabd2f; font-size: 24px;">●</span>
-                <span style="
-                    font-size: 22px; 
-                    color: #a89984; 
-                    font-weight: bold; 
-                    letter-spacing: 1px;
-                ">HASHIR_PORTFOLIO.EXE</span>
-            </div>
-            <button id="exit-btn" style="${getButtonStyles('exit')}">X</button>
-        </div>
+        margin: 0 0 12px 0;
+        font-size: 30px;
+        font-weight: 900;
+        color: #fabd2f;
+        text-align: left;
+        letter-spacing: 2px;
+        text-transform: uppercase;
     `;
 }
 
 function generateContentHTML(project) {
     return `
-        <div style="flex-grow: 1; display: flex; gap: 40px; align-items: center;">
-            ${generateImageSection(project)}
+        <div style="flex-grow: 1; display: flex; gap: 40px; align-items: flex-start;">
+            <div style="width: 50%; display: flex; flex-direction: column; gap: 18px;">
+                ${generateGithubLink(project)}
+                ${generateImageSection(project)}
+            </div>
             ${generateProjectDetailsSection(project)}
         </div>
+    `;
+}
+
+function generateGithubLink(project) {
+    return `
+        <a href="${project.github || '#'}" target="_blank" style="
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            background: #458588;
+            color: #ebdbb2;
+            padding: 14px 24px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-size: 18px;
+            font-weight: 700;
+            border: 2px solid #076678;
+            box-shadow: 3px 3px 0px rgba(0,0,0,0.3);
+            transition: all 0.2s;
+            width: fit-content;
+        " onmouseover="this.style.background='#076678'" onmouseout="this.style.background='#458588'">
+            <svg width="22" height="22" fill="currentColor" viewBox="0 0 16 16">
+                <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.012 8.012 0 0 0 16 8c0-4.42-3.58-8-8-8z"/>
+            </svg>
+            Check out on GitHub
+        </a>
     `;
 }
 
 function generateImageSection(project) {
     return `
         <div style="
-            width: 45%; 
-            height: 420px;
+            width: 100%; 
+            aspect-ratio: 4/3;
             background: #1d2021; 
             border-radius: 8px; 
             overflow: hidden;
-            border: 5px solid #3c3836; 
-            box-shadow: 8px 8px 0px #1d2021;
+            border: 2px solid #504945; 
+            box-shadow: 0 8px 20px rgba(0,0,0,0.5);
             display: flex; 
             align-items: center; 
             justify-content: center;
+            position: relative;
         ">
             <img id="p-img" src="${project.image}" style="${getImageStyles()}">
         </div>
@@ -239,10 +252,10 @@ function generateImageSection(project) {
 
 function generateProjectDetailsSection(project) {
     return `
-        <div style="width: 55%; display: flex; flex-direction: column; justify-content: center;">
-            <h1 id="p-title" style="${getTitleStyles()}">${project.title}</h1>
+        <div style="width: 50%; display: flex; flex-direction: column; gap: 15px;">
+            <h2 id="p-title" style="${getTitleStyles()}">${project.title}</h2>
             <p id="p-desc" style="${getDescriptionStyles()}">${project.description}</p>
-            <div id="p-stack" style="display: flex; gap: 15px; flex-wrap: wrap;">
+            <div id="p-stack" style="display: flex; gap: 12px; flex-wrap: wrap; margin-top: auto;">
                 ${generateStackTags(project.stack)}
             </div>
         </div>
@@ -251,62 +264,48 @@ function generateProjectDetailsSection(project) {
 
 function generateFooterHTML() {
     return `
-        <div style="margin-top: auto; display: flex; gap: 20px; align-items: center; justify-content: flex-end;">
+        <div style="margin-top: 15px; display: flex; gap: 15px; align-items: center; justify-content: center;">
             <button id="prev-btn" style="${getButtonStyles('prev')}">&lt; PREV</button>
             <button id="next-btn" style="${getButtonStyles('next')}">NEXT &gt;</button>
         </div>
     `;
 }
 
-// ==================== STYLE HELPERS ====================
 function getImageStyles() {
     return `
         width: 100%; 
         height: 100%; 
-        object-fit: fill;
-        opacity: 0.95; 
-        filter: sepia(0.1) contrast(1.1);
+        object-fit: cover;
+        opacity: 0.9; 
         will-change: auto;
     `;
 }
 
 function getTitleStyles() {
     return `
-        margin: 0 0 20px 0; 
-        font-size: 52px;
+        margin: 0; 
+        font-size: 42px;
         font-weight: 800; 
         color: #fe8019;
-        letter-spacing: -2px;
+        letter-spacing: -0.5px;
         line-height: 1.1;
-        -webkit-font-smoothing: antialiased;
-        -moz-osx-font-smoothing: grayscale;
-        text-rendering: optimizeLegibility;
-        will-change: auto;
-        transition: none !important;
-        animation: none !important;
     `;
 }
 
 function getDescriptionStyles() {
     return `
         font-size: 28px;
-        color: #d5c4a1; 
-        line-height: 1.4; 
-        margin-bottom: 30px; 
-        font-weight: 600;
-        -webkit-font-smoothing: antialiased;
-        -moz-osx-font-smoothing: grayscale;
-        text-rendering: optimizeLegibility;
-        will-change: auto;
-        transition: none !important;
-        animation: none !important;
+        color: #ebdbb2; 
+        line-height: 1.7; 
+        margin: 0; 
+        font-weight: 500;
     `;
 }
 
 function getButtonStyles(type) {
     const baseStyles = `
         border: none;
-        border-radius: 8px;
+        border-radius: 6px;
         cursor: pointer;
         font-weight: bold;
         font-family: inherit;
@@ -315,30 +314,35 @@ function getButtonStyles(type) {
 
     const typeStyles = {
         exit: `
+            position: absolute;
+            top: 25px;
+            right: 25px;
+            z-index: 50;
             background: #cc241d;
-            border: 3px solid #1d2021;
+            border: 2px solid #1d2021;
             color: #ebdbb2;
-            font-size: 24px;
-            width: 50px;
-            height: 50px;
+            font-size: 20px;
+            width: 45px;
+            height: 45px;
             display: flex;
             align-items: center;
             justify-content: center;
             font-weight: bold;
+            box-shadow: 0 4px 0 rgba(0,0,0,0.5);
         `,
         prev: `
             background: #3c3836;
             color: #ebdbb2;
-            padding: 16px 40px;
-            font-size: 20px;
+            padding: 12px 30px;
+            font-size: 16px;
         `,
         next: `
             background: #fabd2f;
             color: #282828;
-            padding: 16px 50px;
-            font-size: 20px;
+            padding: 12px 35px;
+            font-size: 16px;
             font-weight: 900;
-            box-shadow: 0 6px 0px #d79921;
+            box-shadow: 0 4px 0px #d79921;
         `
     };
 
@@ -350,49 +354,45 @@ function generateStackTags(stack) {
         <span style="
             background: #fabd2f; 
             color: #1d2021; 
-            padding: 10px 22px;
-            border-radius: 8px; 
-            font-size: 22px;
+            padding: 12px 24px;
+            border-radius: 6px; 
+            font-size: 20px;
             font-weight: 800; 
             border: 2px solid #d79921;
-            box-shadow: 4px 4px 0px rgba(0,0,0,0.4);
+            box-shadow: 3px 3px 0px rgba(0,0,0,0.4);
             display: inline-block;
         ">${tech}</span>
     `).join('');
 }
 
-// ==================== EVENT HANDLERS ====================
 function attachEventListeners(container, scene, camera, controls, anchorMesh) {
     const nextBtn = container.querySelector('#next-btn');
     const prevBtn = container.querySelector('#prev-btn');
     const exitBtn = container.querySelector('#exit-btn');
 
     nextBtn.addEventListener('pointerdown', () => {
-        // 🟢 AUDIO: UI Click
         audioManager.playOneShot('click', null, 0.5);
         handleNextProject(nextBtn);
     });
 
     prevBtn.addEventListener('pointerdown', () => {
-        // 🟢 AUDIO: UI Click
         audioManager.playOneShot('click', null, 0.5);
         handlePrevProject();
     });
 
     exitBtn.addEventListener('pointerdown', () => {
-        // 🟢 AUDIO: UI Click
         audioManager.playOneShot('click', null, 0.5);
         handleExitWorkMode(scene, camera, controls, anchorMesh);
     });
 }
 
 function handleNextProject(button) {
-    button.style.transform = 'translateY(6px)';
+    button.style.transform = 'translateY(4px)';
     button.style.boxShadow = '0 0 0 #d79921';
 
     setTimeout(() => {
         button.style.transform = 'translateY(0)';
-        button.style.boxShadow = '0 6px 0 #d79921';
+        button.style.boxShadow = '0 4px 0 #d79921';
         
         state.currentProjectIndex = (state.currentProjectIndex + 1) % projects.length;
         updateProjectDisplay();
@@ -414,7 +414,6 @@ function handleExitWorkMode(scene, camera, controls, anchorMesh) {
     animateCameraToNormalMode(camera, controls);
 }
 
-// ==================== PROJECT DISPLAY UPDATE ====================
 function updateProjectDisplay() {
     const content = document.getElementById('screen-content');
     if (!content) return;
@@ -425,6 +424,7 @@ function updateProjectDisplay() {
     updateElement(content, '#p-desc', project.description);
     updateElement(content, '#p-img', project.image, true);
     updateStackTags(content, project.stack);
+    updateGithubLink(content, project.github);
 }
 
 function updateElement(container, selector, value, isImage = false) {
@@ -447,17 +447,12 @@ function updateStackTags(container, stack) {
     const stackContainer = container.querySelector('#p-stack');
     if (!stackContainer) return;
 
-    stackContainer.innerHTML = stack.map(tech => `
-        <span style="
-            background: #fabd2f; 
-            color: #1d2021; 
-            padding: 10px 18px;
-            border-radius: 8px; 
-            font-size: 18px;
-            font-weight: 800; 
-            border: 2px solid #d79921;
-            box-shadow: 4px 4px 0px rgba(0,0,0,0.4);
-            display: inline-block;
-        ">${tech}</span>
-    `).join('');
+    stackContainer.innerHTML = generateStackTags(stack);
+}
+
+function updateGithubLink(container, githubUrl) {
+    const githubLink = container.querySelector('a[href*="github"]');
+    if (!githubLink) return;
+    
+    githubLink.href = githubUrl || '#';
 }

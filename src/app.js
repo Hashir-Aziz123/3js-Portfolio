@@ -4,13 +4,14 @@ import { RectAreaLightUniformsLib, RectAreaLightHelper } from 'three/examples/js
 import camera from './scene/camera';
 import controls from './scene/controls';
 import renderer from './scene/renderer';
-import { createCSSRenderer } from './scene/cssRenderer'; // 🟢 NEW: Import CSS Renderer
+import { createCSSRenderer } from './scene/cssRenderer'; 
 
 import Car from './objects/car';
 import room from './objects/room';
 import screenMesh from './objects/screenMesh';
 
-import { backgroundLight, moonLight, lampLight, moonLightTarget, windowBeam, beamTarget, printerLight, phoneLight, greenScreenMesh, redScreenMesh, laptopScreenLight } from './scene/lights';
+import { backgroundLight, moonLight, lampLight, moonLightTarget, windowBeam, beamTarget,
+         printerLight, phoneLight, greenScreenMesh, redScreenMesh, laptopScreenLight, sideTableLight } from './scene/lights';
 import { addCarMovementEventListener, disposeKeyboardControls, inputState } from './systems/events';
 import { createComposer } from './scene/postprocessing';
 import animate from './systems/animate';
@@ -35,12 +36,27 @@ export async function setUpScene() {
     window.camera = camera;
     window.controls = controls;
 
-    // 🟢 NEW: Initialize CSS Renderer
+    controls.target.set( -3.659, 0.133, 3.957);
+    controls.update();
+
+    controls.listenToKeyEvents(window); 
+    controls.keyPanSpeed = 10.0; 
+    controls.enableDamping = true; 
+
+    window.addEventListener('keydown', (e) => {
+        if (e.key.toLowerCase() === 'p') {
+            console.log(`
+    position: { x: ${camera.position.x.toFixed(3)}, y: ${camera.position.y.toFixed(3)}, z: ${camera.position.z.toFixed(3)} },
+    target: { x: ${controls.target.x.toFixed(3)}, y: ${controls.target.y.toFixed(3)}, z: ${controls.target.z.toFixed(3)} }
+            `);
+        }
+    });
+
+    // Initialize CSS Renderer
     const cssRenderer = createCSSRenderer();
     document.body.appendChild(cssRenderer.domElement);
 
     // Adding all event listeners
-    // 🟢 NEW: Pass cssRenderer to resize handler
     addWindowResizeEventListener(camera, renderer, cssRenderer); 
     addCarMovementEventListener();
 
@@ -64,14 +80,27 @@ export async function setUpScene() {
 
     // for the lamp
     scene.add(laptopScreenLight);
+
+    // Side light
+    scene.add(sideTableLight)
+
+    // // Helpers
+
+    // const moonHelper = new THREE.DirectionalLightHelper(moonLight, 1);
+    // scene.add(moonHelper);
+
+    // const beamHelper = new THREE.SpotLightHelper(windowBeam);
+    // scene.add(beamHelper);
+
+    // const sideHelper = new THREE.PointLightHelper(sideTableLight, 0.5);
+    // scene.add(sideHelper);
+
+
+    // Adding Fog
+    const fogColor = 0x050505; 
+    scene.background = new THREE.Color(fogColor);
+    scene.fog = new THREE.FogExp2(fogColor, 0.08); // Kept your thicker fog
     
-
-    // const lampLightHelper = new THREE.PointLightHelper(lampLight, 0.2);
-    // scene.add(lampLightHelper);
-
-    // const laptopLightHelper = new RectAreaLightHelper(laptopScreenLight);
-    // scene.add(laptopLightHelper);
-
     const roomModel = await room;
     const car = new Car();
     await car.load();
@@ -82,15 +111,11 @@ export async function setUpScene() {
     // Screen Mesh on Laptop
     scene.add(screenMesh);
     
-
     // Adding rain shader
     const { mesh: rainGroup } = createRainPlane(4, 3.5); 
     rainGroup.position.set(-4.2, 5.3, 7.11); 
     rainGroup.rotation.y = Math.PI; 
     scene.add(rainGroup);
-
-    // const rainHelper = new THREE.BoxHelper(rainGroup, 0xffff00); 
-    // scene.add(rainHelper);
 
     // Setting up interactions
     const interaction = new InteractionManager(scene, camera, renderer.domElement);
@@ -113,7 +138,6 @@ export async function setUpScene() {
         "laptop",
     ]);
     if (laptopGroup) {
- 
         interaction.register(laptopGroup.name, () => onPcClick({ camera, controls, scene, cssRenderer }));
     } 
 
@@ -146,7 +170,6 @@ export async function setUpScene() {
             audioManager.updateRainVolume(camera.position, windowTargetPos);
             if (rainGroup.userData.tick) rainGroup.userData.tick(delta);
             
-            // 🟢 NEW: Update the CSS Renderer
             cssRenderer.render(scene, camera);
         }
     ], composer);
@@ -156,13 +179,11 @@ function handleCarMovement(car, delta) {
     car.updateMotion(inputState, delta);
 }
 
-// 🟢 NEW: Updated Resize Handler
 function addWindowResizeEventListener(camera, renderer, cssRenderer) {
     window.addEventListener('resize', () => {
         camera.aspect = window.innerWidth / window.innerHeight;
         camera.updateProjectionMatrix();
         renderer.setSize(window.innerWidth, window.innerHeight);
-        // Resize CSS Renderer too
         if(cssRenderer) cssRenderer.setSize(window.innerWidth, window.innerHeight);
     });
 }

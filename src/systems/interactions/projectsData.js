@@ -7,7 +7,7 @@ export const projects = [
     },
     {
         title: "Music Streaming Site",
-        description: "Full-stack application with secure auth and optimized audio pipelines. Focused on scalable database architecture and state management.",
+        description: "Full-stack application with secure auth and optimized audio pipelines + a logic driven recommendation system.",
         stack: ["React", "Node.js", "Express", "MongoDB"],
         image: "/assets/images/Spotify.png"
     },    
