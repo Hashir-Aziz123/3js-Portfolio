@@ -18,14 +18,11 @@ canvas {
   display: block;
 }
 
-/* THE OVERLAY - Minimalist Version */
 #overlay {
   position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: #1d2021; /* Keep scene bg, or use #000 for pure black */
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background-color: #1d2021; 
   display: flex;
   justify-content: center;
   align-items: center;
@@ -35,46 +32,72 @@ canvas {
 
 .terminal-container {
   text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 15px;
 }
 
 #loader-text {
-  font-family: 'Courier New', monospace; /* Keeping mono, but making it elegant */
-  font-size: 4rem; /* 🟢 BIGGER (approx 64px) */
-  font-weight: 300; /* Thinner looks cleaner at large sizes */
-  color: #ffffff;   /* 🟢 CLEAN WHITE */
-  letter-spacing: -2px; /* Tighten it up for a modern look */
-  margin-bottom: 15px;
-  /* Removed text-transform: uppercase */
+  font-family: 'Courier New', monospace;
+  font-size: 3rem; 
+  font-weight: 300;
+  color: #ffffff;
+  letter-spacing: -1px;
+  cursor: default; 
+  transition: all 0.3s ease;
 }
+
 
 #sub-text {
-  font-family: 'Helvetica', 'Arial', sans-serif; /* Contrast font */
-  font-size: 14px;
-  color: #808080; /* Neutral Grey */
+  font-family: 'Helvetica', sans-serif;
+  font-size: 12px;
+  color: #808080;
   letter-spacing: 2px;
-  opacity: 0.7;
+  text-transform: uppercase;
 }
 
-/* THE CURSOR - Thin Pipe */
+#controls-hint {
+  margin-top: 40px; 
+  font-family: 'Courier New', monospace; 
+  
+  font-size: 18px; 
+  font-weight: 700; 
+  
+  color: #a89984; 
+  letter-spacing: 2px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  
+  opacity: 0; 
+  animation: fadeIn 1s ease-out forwards 0.5s; 
+}
+
+#controls-hint .icon {
+  color: #fabd2f;
+  font-size: 20px; 
+  animation: pulse 2s infinite ease-in-out;
+}
+
+/* CURSOR */
 .cursor {
   font-weight: 100;
-  margin-left: 2px;
+  margin-left: 5px;
   animation: blink 1s infinite;
+  color: #fabd2f; 
+}
+
+@keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
+@keyframes fadeIn { to { opacity: 1; } }
+@keyframes pulse { 0%, 100% { opacity: 0.6; } 50% { opacity: 1; text-shadow: 0 0 10px #fabd2f; } }
+
+.ready-state { cursor: pointer; }
+
+.ready-state #loader-text:hover {
   color: #ffffff;
-}
-
-@keyframes blink {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0; }
-}
-
-/* HOVER STATE */
-.ready-state {
-  cursor: pointer;
-}
-
-/* Subtle glow on hover instead of color change */
-.ready-state #loader-text {
-  text-shadow: 0 0 20px rgba(255, 255, 255, 0.5);
-  transition: text-shadow 0.3s ease;
+  text-shadow: 
+      0 0 15px rgba(250, 189, 47, 0.6),
+      0 0 30px rgba(250, 189, 47, 0.4);
+  transform: scale(1.02);
 }

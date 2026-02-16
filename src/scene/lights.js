@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 
 // Ambient Light
-const backgroundLight = new THREE.AmbientLight(0xffffff, 0.05 ); // keep it 0.045
+const backgroundLight = new THREE.AmbientLight(0xffffff, 0.05  ); // keep it 0.045
 
 // Moon Light
 const moonLight = new THREE.DirectionalLight(0xaaccff, 0.4);

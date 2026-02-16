@@ -13,34 +13,25 @@ const room = new Promise((resolve, reject) =>{
 
             setupRoomShadows(roomScene);
 
+            positionPaintings(roomScene);
+
  
 
             const floorMesh = roomScene.getObjectByName('room_floor');
             
             if (floorMesh) {
-                // Load the normal map with proper settings
                 const normalMap = textureLoader.load('../../assets/textures/floor_diffuse_v4.png');
                 
-                // CRITICAL: Set colorSpace instead of encoding (for newer Three.js)
-                normalMap.colorSpace = THREE.NoColorSpace; // Normal maps should NOT have color space conversion
-                
-                // Set wrapping and filtering for better quality
+                normalMap.colorSpace = THREE.NoColorSpace; 
                 normalMap.wrapS = THREE.RepeatWrapping;
                 normalMap.wrapT = THREE.RepeatWrapping;
                 normalMap.minFilter = THREE.LinearMipmapLinearFilter;
                 normalMap.magFilter = THREE.LinearFilter;
-                
-                // If your texture needs tiling, set repeat:
-                // normalMap.repeat.set(1, 1);
-
-                // Apply to material
                 floorMesh.material.normalMap = normalMap;
                 floorMesh.material.normalMapType = THREE.TangentSpaceNormalMap;
                 
-                // Adjust strength - start subtle, increase if needed
-                floorMesh.material.normalScale.set(0.05, 0.05); // Try lower values first
+                floorMesh.material.normalScale.set(0.05, 0.05); 
                 
-                // Compute tangents if missing
                 if (!floorMesh.geometry.attributes.tangent) {
                     console.log("⚠️ Tangents missing on floor. Computing them now...");
                     floorMesh.geometry.computeTangents();
@@ -63,12 +54,25 @@ const room = new Promise((resolve, reject) =>{
     );
 });
 
+function positionPaintings(roomScene) {
+    const paintings = ['painting_1', 'painting_frame_1', 'painting_2', 'painting_frame_2'];
+    const offsetAmount = +0.05;
+
+    paintings.forEach(name => {
+        const mesh = roomScene.getObjectByName(name);
+        if (mesh) {
+            mesh.position.z += offsetAmount;
+            console.log(`🖼️ Adjusted position for ${name}`);
+        } else {
+            console.warn(`⚠️ Could not find ${name}`);
+        }
+    });
+}
+
 function setupRoomShadows(roomScene) {
     roomScene.traverse((child) => {
         if (child.isMesh) {
-            // 1. Upgrade Material (Keep your existing logic)
             if (!child.material.isMeshStandardMaterial) {
-                 // ... (Your material upgrade code is fine) ...
                  const oldMat = child.material;
                  child.material = new THREE.MeshStandardMaterial({
                      map: oldMat.map,
@@ -81,15 +85,13 @@ function setupRoomShadows(roomScene) {
                  });
             }
 
-            // 2. 🟢 THE FIX: Check for Lamp Paper FIRST
             if (child.name === 'lamp_paper_body') {
                 console.log("👻 Ghost Mode Activated for:", child.name);
-                child.castShadow = false;     // NO shadow
-                child.receiveShadow = false;  // Don't receive either (cleaner look)
-                child.material.emissive.setHex(0xffaa33); // Glow on
-                child.material.side = THREE.DoubleSide; // Let light out both ways
+                child.castShadow = false;    
+                child.receiveShadow = false;  
+                child.material.emissive.setHex(0xffaa33); 
+                child.material.side = THREE.DoubleSide; 
             } 
-            // 3. Apply Shadows to EVERYTHING ELSE
             else {
                 child.castShadow = true;
                 child.receiveShadow = true;
@@ -102,46 +104,5 @@ function setupRoomShadows(roomScene) {
     });
 }
 
-// function updateFootballShadow(roomScene) {
-//     roomScene.traverse((child) => {
-//         if (child.isMesh && child.name.toLowerCase().includes('soccer') ) {
-//             console.log("Found Football:", child.name);
-
-//             child.castShadow = false;
-//             const shadowPlane = createFakeShadow();
-//             shadowPlane.position.y = 0.02;
-//             child.add(shadowPlane);
-//         }
-//     });
-// }
-
-// function createFakeShadow() {
-//     const canvas = document.createElement('canvas');
-//     canvas.width = 128;
-//     canvas.height = 128;
-//     const context = canvas.getContext('2d');
-    
-//     const gradient = context.createRadialGradient(
-//         64, 64, 0,
-//         64, 64, 64
-//     );
-//     gradient.addColorStop(0, 'rgba(0, 0, 0, 0.6)');
-//     gradient.addColorStop(1, 'rgba(0, 0, 0, 0)');
-    
-//     context.fillStyle = gradient;
-//     context.fillRect(0, 0, 128, 128);
-
-//     const shadowTexture = new THREE.CanvasTexture(canvas);
-//     const shadowGeometry = new THREE.PlaneGeometry(0.8, 0.8);
-//     const shadowMaterial = new THREE.MeshBasicMaterial({
-//         map: shadowTexture,
-//         transparent: true,
-//         depthWrite: false,
-//     });
-
-//     const plane = new THREE.Mesh(shadowGeometry, shadowMaterial);
-//     plane.rotation.x = -Math.PI / 2;
-//     return plane;
-// }
 
 export default room;

@@ -8,7 +8,7 @@ renderer.antialias = true;
 renderer.outputColorSpace = THREE.SRGBColorSpace;
 
 renderer.shadowMap.enabled = true;
-renderer.shadowMap.type = THREE.PCFShadowMap; // instead of BasicShadowMap
+renderer.shadowMap.type = THREE.PCFSoftShadowMap; // instead of BasicShadowMap
 
 document.body.appendChild(renderer.domElement);
 
