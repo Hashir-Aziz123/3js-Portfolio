@@ -1,14 +1,16 @@
 import * as THREE from 'three';
 
-export function createRainPlane(width, height) {
+export async function createRainPlane(width, height) {
     const loader = new THREE.TextureLoader();
-    const group = new THREE.Group(); 
+    const group = new THREE.Group();
 
     const basePath = '/assets/textures/rainTexture/';
 
-    // Load textures
-    const displacementTex = loader.load(`${basePath}Leaking019B_1K-PNG_Displacement.png`);
-    const roughnessTex = loader.load(`${basePath}Leaking019B_1K-PNG_Roughness.png`);
+    // Load textures (awaited so the clones below copy loaded images)
+    const [displacementTex, roughnessTex] = await Promise.all([
+        loader.loadAsync(`${basePath}Leaking019B_1K_Displacement.jpg`),
+        loader.loadAsync(`${basePath}Leaking019B_1K_Roughness.jpg`)
+    ]);
     
     [displacementTex, roughnessTex].forEach(tex => {
         tex.wrapS = THREE.RepeatWrapping;
@@ -85,11 +87,14 @@ export function createRainPlane(width, height) {
     group.add(mesh4);
 
     // 🎬 ANIMATION
+    // Each layer also had a fixed step per frame, which made the rain faster on high
+    // refresh rate screens; that step is now per second at 60 fps, so it looks the same there.
+    const FRAME = 60;
     group.userData.tick = (delta) => {
-        if (material1.map) material1.map.offset.y += delta * 0.35 + 0.15;
-        if (material2.map) material2.map.offset.y += delta * 0.18 + 0.02;
-        if (material3.map) material3.map.offset.y += delta * 0.1 + 0.02; 
-        if (material4.map) material4.map.offset.y += delta * 0.05 + 0.025;
+        if (material1.map) material1.map.offset.y += delta * (0.35 + 0.15 * FRAME);
+        if (material2.map) material2.map.offset.y += delta * (0.18 + 0.02 * FRAME);
+        if (material3.map) material3.map.offset.y += delta * (0.1 + 0.02 * FRAME);
+        if (material4.map) material4.map.offset.y += delta * (0.05 + 0.025 * FRAME);
     };
 
     console.log("✅ Rain opacity tuned down for subtle effect");

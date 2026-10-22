@@ -1,5 +1,4 @@
 import * as THREE from 'three';
-import { RectAreaLightUniformsLib, RectAreaLightHelper } from 'three/examples/jsm/Addons.js';
 
 import camera from './scene/camera';
 import controls from './scene/controls';
@@ -7,14 +6,14 @@ import renderer from './scene/renderer';
 import { createCSSRenderer } from './scene/cssRenderer'; 
 
 import Car from './objects/car';
-import room from './objects/room';
+import loadRoom from './objects/room';
 import screenMesh from './objects/screenMesh';
 
 import { backgroundLight, moonLight, lampLight, moonLightTarget, windowBeam, beamTarget,
          printerLight, phoneLight, greenScreenMesh, redScreenMesh, laptopScreenLight, sideTableLight } from './scene/lights';
-import { addCarMovementEventListener, disposeKeyboardControls, inputState } from './systems/events';
 import { createComposer } from './scene/postprocessing';
 import animate from './systems/animate';
+import { createAdaptiveResolution } from './systems/adaptiveResolution';
 
 // Interactions
 import { createGroup } from './utils/createGroup';           
@@ -31,7 +30,11 @@ import audioManager from './systems/audioManager';
 // rain Shader
 import { createRainPlane } from './scene/environment';
 
-export async function setUpScene() {
+let isStarted = false;
+
+// Loads every asset and builds the scene behind the loading overlay.
+// onProgress receives the download fraction (0-1) of the models.
+export async function setUpScene(onProgress = () => {}) {
 
     window.camera = camera;
     window.controls = controls;
@@ -39,9 +42,8 @@ export async function setUpScene() {
     controls.target.set( -3.659, 0.133, 3.957);
     controls.update();
 
-    controls.listenToKeyEvents(window); 
-    controls.keyPanSpeed = 10.0; 
-    controls.enableDamping = true; 
+    controls.enableDamping = true;
+    controls.enabled = false; // enabled by startScene() once the overlay is dismissed
 
     window.addEventListener('keydown', (e) => {
         if (e.key.toLowerCase() === 'p') {
@@ -56,14 +58,8 @@ export async function setUpScene() {
     const cssRenderer = createCSSRenderer();
     document.body.appendChild(cssRenderer.domElement);
 
-    // Adding all event listeners
-    addWindowResizeEventListener(camera, renderer, cssRenderer); 
-    addCarMovementEventListener();
-
     const scene = new THREE.Scene();
     scene.background = new THREE.Color(0x000000);
-
-    RectAreaLightUniformsLib.init();
 
     // Adding lights
     scene.add(backgroundLight);
@@ -101,9 +97,20 @@ export async function setUpScene() {
     scene.background = new THREE.Color(fogColor);
     scene.fog = new THREE.FogExp2(fogColor, 0.08); // Kept your thicker fog
     
-    const roomModel = await room;
+    // Download everything in parallel; the room is ~90% of the bytes
+    const loaded = { room: 0, car: 0 };
+    const trackProgress = (key) => (event) => {
+        if (!event.total) return;
+        loaded[key] = event.loaded / event.total;
+        onProgress(0.9 * loaded.room + 0.1 * loaded.car);
+    };
+
     const car = new Car();
-    await car.load();
+    const [roomModel, , { mesh: rainGroup }] = await Promise.all([
+        loadRoom(trackProgress('room')),
+        car.load(trackProgress('car')),
+        createRainPlane(4, 3.5)
+    ]);
 
     scene.add(roomModel);
     scene.add(car.model);
@@ -112,7 +119,6 @@ export async function setUpScene() {
     scene.add(screenMesh);
     
     // Adding rain shader
-    const { mesh: rainGroup } = createRainPlane(4, 3.5); 
     rainGroup.position.set(-4.2, 5.3, 7.11); 
     rainGroup.rotation.y = Math.PI; 
     scene.add(rainGroup);
@@ -150,7 +156,6 @@ export async function setUpScene() {
 
     // Audio setup
     audioManager.setupCameraListener(camera);
-    audioManager.startRainStream();
 
     const windowTargetPos = new THREE.Vector3();     
     const windowMesh = scene.getObjectByName('window_glass');
@@ -163,6 +168,14 @@ export async function setUpScene() {
     
     // Post-processing 
     const composer = createComposer(renderer, scene, camera);
+    addWindowResizeEventListener(camera, renderer, cssRenderer, composer);
+
+    // Shadow maps are static (see renderer.js): draw them once now.
+    // Compiling shaders up front avoids a freeze on the first visible frame.
+    renderer.shadowMap.needsUpdate = true;
+    await renderer.compileAsync(scene, camera);
+
+    const updateResolution = createAdaptiveResolution(renderer, composer);
 
     // Start animation loop
     animate(scene, camera, controls, renderer, [
@@ -171,19 +184,29 @@ export async function setUpScene() {
             if (rainGroup.userData.tick) rainGroup.userData.tick(delta);
             
             cssRenderer.render(scene, camera);
+
+            // Only judge frame rate once the user is in the scene, not while loading
+            if (isStarted) updateResolution(delta);
         }
     ], composer);
+
+    // Render a couple of frames behind the overlay so textures are uploaded to the GPU
+    await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
 }
 
-function handleCarMovement(car, delta) {
-    car.updateMotion(inputState, delta);
+// Called on the user's click: browsers only allow audio after a user gesture
+export function startScene() {
+    isStarted = true;
+    controls.enabled = true;
+    audioManager.startRainStream();
 }
 
-function addWindowResizeEventListener(camera, renderer, cssRenderer) {
+function addWindowResizeEventListener(camera, renderer, cssRenderer, composer) {
     window.addEventListener('resize', () => {
         camera.aspect = window.innerWidth / window.innerHeight;
         camera.updateProjectionMatrix();
         renderer.setSize(window.innerWidth, window.innerHeight);
         if(cssRenderer) cssRenderer.setSize(window.innerWidth, window.innerHeight);
+        if(composer) composer.setSize(window.innerWidth, window.innerHeight);
     });
 }

@@ -3,6 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" href="data:," />
     <link rel="stylesheet" href="./styles/style.css" />
     <title>Portfolio 2026</title>
   </head>
@@ -11,9 +12,9 @@
     <div id="overlay">
         <div class="terminal-container">
             <div id="loader-text">Initializing...<span class="cursor">|</span></div>
-            
+
             <div id="sub-text">loading assets</div>
-            
+
             <div id="controls-hint">
                 <span class="icon">●</span>
                 <span>INTERACTIVE OBJECTS EMIT LIGHT</span>
@@ -22,20 +23,21 @@
     </div>
 
     <div id="app"></div>
+
+    <div id="mobile-warning">
+        <div class="terminal-container">
+            <div class="error-title">Invalid System</div>
+            <div class="error-message">
+                Mobile architecture in use<br>
+                Unable to render assets
+            </div>
+            <div class="error-hint">
+                > Please access via desktop for the intended experience
+            </div>
+        </div>
+    </div>
+
     <script type="module" src="/main.js"></script>
 
   </body>
-
-  <div id="mobile-warning">
-    <div class="terminal-container">
-        <div class="error-title">Invalid System</div>
-        <div class="error-message">
-            Mobile architecture in use<br>
-            Unable to render assets
-        </div>
-        <div class="error-hint">
-            > Please access via desktop for the intended experience
-        </div>
-    </div>
-</div>
 </html>

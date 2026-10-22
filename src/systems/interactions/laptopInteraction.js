@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import gsap from 'gsap';
 import { CSS3DObject } from 'three/examples/jsm/renderers/CSS3DRenderer.js';
-import { laptopScreenLight } from '../../scene/lights'; 
+import { laptopScreenLight, LAPTOP_LIGHT_ON_INTENSITY } from '../../scene/lights'; 
 import { projects } from './projectsData.js'; 
 import audioManager from '../audioManager'; 
 
@@ -90,7 +90,7 @@ function applyWorkModeEffects(scene, anchorMesh) {
     if (laptopScreenLight) {
         laptopScreenLight.color.setHex(0xffaa55);
         gsap.to(laptopScreenLight, { 
-            intensity: 2.5, 
+            intensity: LAPTOP_LIGHT_ON_INTENSITY, 
             duration: 1.0, 
             ease: "power2.out" 
         });
@@ -146,11 +146,16 @@ function createScreenContainer() {
 function generateScreenHTML(project) {
     return `
         <div id="screen-content" style="${getScreenStyles()}">
-            <button id="exit-btn" style="${getButtonStyles('exit')}">X</button>
-            <h1 style="${getMainHeadingStyles()}">Explore My Projects</h1>
-            <div style="width: 100%; height: 2px; background: #504945; margin-bottom: 20px;"></div>
+            <div style="display: flex; align-items: center; justify-content: space-between;">
+                <h1 style="${getMainHeadingStyles()}">Explore My Projects</h1>
+                <div style="display: flex; align-items: center; gap: 22px;">
+                    <span id="p-count" style="font-size: 20px; font-weight: 700; color: #a89984; letter-spacing: 2px;">${getCounterText()}</span>
+                    <button id="exit-btn" style="${getButtonStyles('exit')}">X</button>
+                </div>
+            </div>
+            <div style="width: 100%; height: 2px; background: #504945; margin: 18px 0 26px 0;"></div>
             ${generateContentHTML(project)}
-            ${generateFooterHTML()}
+            ${generateFooterHTML(project)}
         </div>
     `;
 }
@@ -160,7 +165,7 @@ function getScreenStyles() {
         width: ${SCREEN_CONFIG.width}px; 
         height: ${SCREEN_CONFIG.height}px; 
         background-color: #282828; 
-        background-image: linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+        background-image: linear-gradient(rgba(255, 255, 255, 0.025) 1px, transparent 1px);
         background-size: 100% 20px;
         border: 8px solid #1d2021; 
         box-sizing: border-box;
@@ -170,7 +175,7 @@ function getScreenStyles() {
         overflow: hidden;
         display: flex; 
         flex-direction: column;
-        padding: 40px 50px 30px 50px;
+        padding: 34px 48px 30px 48px;
         pointer-events: auto;
         backface-visibility: hidden;
         transform-style: preserve-3d;
@@ -181,110 +186,71 @@ function getScreenStyles() {
 
 function getMainHeadingStyles() {
     return `
-        margin: 0 0 12px 0;
-        font-size: 30px;
+        margin: 0;
+        font-size: 26px;
         font-weight: 900;
         color: #fabd2f;
-        text-align: left;
-        letter-spacing: 2px;
+        letter-spacing: 3px;
         text-transform: uppercase;
     `;
 }
 
+function getCounterText() {
+    const pad = (n) => String(n).padStart(2, '0');
+    return `${pad(state.currentProjectIndex + 1)} / ${pad(projects.length)}`;
+}
+
 function generateContentHTML(project) {
     return `
-        <div style="flex-grow: 1; display: flex; gap: 40px; align-items: flex-start;">
-            <div style="width: 50%; display: flex; flex-direction: column; gap: 18px;">
-                ${generateGithubLink(project)}
-                ${generateImageSection(project)}
+        <div style="flex-grow: 1; display: flex; flex-direction: column; gap: 14px;">
+            <h2 id="p-title" style="${getTitleStyles()}">${project.title}</h2>
+            <div id="p-tagline" style="${getTaglineStyles()}">${project.tagline}</div>
+            <p id="p-desc" style="${getDescriptionStyles()}">${project.description}</p>
+        </div>
+    `;
+}
+
+function generateFooterHTML(project) {
+    return `
+        <div style="margin-top: 24px; display: flex; align-items: center; justify-content: space-between;">
+            ${generateGithubLink(project)}
+            <div style="display: flex; gap: 14px; margin-left: auto;">
+                <button id="prev-btn" style="${getButtonStyles('prev')}">&lt; PREV</button>
+                <button id="next-btn" style="${getButtonStyles('next')}">NEXT &gt;</button>
             </div>
-            ${generateProjectDetailsSection(project)}
         </div>
     `;
 }
 
 function generateGithubLink(project) {
     return `
-        <a href="${project.github || '#'}" target="_blank" style="
-            display: flex;
+        <a id="p-github" href="${project.github || '#'}" target="_blank" style="
+            display: ${project.github ? 'flex' : 'none'};
             align-items: center;
-            justify-content: center;
             gap: 10px;
-            background: #458588;
-            color: #ebdbb2;
-            padding: 14px 24px;
+            background: #fe8019;
+            color: #1d2021;
+            padding: 12px 24px;
             border-radius: 6px;
             text-decoration: none;
             font-size: 18px;
-            font-weight: 700;
-            border: 2px solid #076678;
-            box-shadow: 3px 3px 0px rgba(0,0,0,0.3);
-            transition: all 0.2s;
-            width: fit-content;
-        " onmouseover="this.style.background='#076678'" onmouseout="this.style.background='#458588'">
+            font-weight: 900;
+            letter-spacing: 1px;
+            box-shadow: 0 4px 0 #af3a03;
+            transition: background 0.2s;
+        " onmouseover="this.style.background='#fabd2f'" onmouseout="this.style.background='#fe8019'">
             <svg width="22" height="22" fill="currentColor" viewBox="0 0 16 16">
                 <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.012 8.012 0 0 0 16 8c0-4.42-3.58-8-8-8z"/>
             </svg>
-            Check out on GitHub
+            VIEW ON GITHUB
         </a>
-    `;
-}
-
-function generateImageSection(project) {
-    return `
-        <div style="
-            width: 100%; 
-            aspect-ratio: 4/3;
-            background: #1d2021; 
-            border-radius: 8px; 
-            overflow: hidden;
-            border: 2px solid #504945; 
-            box-shadow: 0 8px 20px rgba(0,0,0,0.5);
-            display: flex; 
-            align-items: center; 
-            justify-content: center;
-            position: relative;
-        ">
-            <img id="p-img" src="${project.image}" style="${getImageStyles()}">
-        </div>
-    `;
-}
-
-function generateProjectDetailsSection(project) {
-    return `
-        <div style="width: 50%; display: flex; flex-direction: column; gap: 15px;">
-            <h2 id="p-title" style="${getTitleStyles()}">${project.title}</h2>
-            <p id="p-desc" style="${getDescriptionStyles()}">${project.description}</p>
-            <div id="p-stack" style="display: flex; gap: 12px; flex-wrap: wrap; margin-top: auto;">
-                ${generateStackTags(project.stack)}
-            </div>
-        </div>
-    `;
-}
-
-function generateFooterHTML() {
-    return `
-        <div style="margin-top: 15px; display: flex; gap: 15px; align-items: center; justify-content: center;">
-            <button id="prev-btn" style="${getButtonStyles('prev')}">&lt; PREV</button>
-            <button id="next-btn" style="${getButtonStyles('next')}">NEXT &gt;</button>
-        </div>
-    `;
-}
-
-function getImageStyles() {
-    return `
-        width: 100%; 
-        height: 100%; 
-        object-fit: cover;
-        opacity: 0.9; 
-        will-change: auto;
     `;
 }
 
 function getTitleStyles() {
     return `
         margin: 0; 
-        font-size: 42px;
+        font-size: 46px;
         font-weight: 800; 
         color: #fe8019;
         letter-spacing: -0.5px;
@@ -292,13 +258,23 @@ function getTitleStyles() {
     `;
 }
 
+function getTaglineStyles() {
+    return `
+        font-size: 19px;
+        font-weight: 700;
+        color: #d79921;
+        letter-spacing: 1.5px;
+        text-transform: uppercase;
+    `;
+}
+
 function getDescriptionStyles() {
     return `
-        font-size: 28px;
-        color: #ebdbb2; 
-        line-height: 1.7; 
-        margin: 0; 
-        font-weight: 500;
+        font-family: Consolas, Menlo, 'Courier New', monospace;
+        font-size: 30px;
+        color: #ebdbb2;
+        line-height: 1.6;
+        margin: 6px 0 0 0; 
     `;
 }
 
@@ -314,10 +290,6 @@ function getButtonStyles(type) {
 
     const typeStyles = {
         exit: `
-            position: absolute;
-            top: 25px;
-            right: 25px;
-            z-index: 50;
             background: #cc241d;
             border: 2px solid #1d2021;
             color: #ebdbb2;
@@ -334,35 +306,20 @@ function getButtonStyles(type) {
             background: #3c3836;
             color: #ebdbb2;
             padding: 12px 30px;
-            font-size: 16px;
+            font-size: 18px;
+            box-shadow: 0 4px 0 #1d2021;
         `,
         next: `
             background: #fabd2f;
             color: #282828;
             padding: 12px 35px;
-            font-size: 16px;
+            font-size: 18px;
             font-weight: 900;
             box-shadow: 0 4px 0px #d79921;
         `
     };
 
     return baseStyles + typeStyles[type];
-}
-
-function generateStackTags(stack) {
-    return stack.map(tech => `
-        <span style="
-            background: #fabd2f; 
-            color: #1d2021; 
-            padding: 12px 24px;
-            border-radius: 6px; 
-            font-size: 20px;
-            font-weight: 800; 
-            border: 2px solid #d79921;
-            box-shadow: 3px 3px 0px rgba(0,0,0,0.4);
-            display: inline-block;
-        ">${tech}</span>
-    `).join('');
 }
 
 function attachEventListeners(container, scene, camera, controls, anchorMesh) {
@@ -421,38 +378,24 @@ function updateProjectDisplay() {
     const project = projects[state.currentProjectIndex];
     
     updateElement(content, '#p-title', project.title);
+    updateElement(content, '#p-tagline', project.tagline);
     updateElement(content, '#p-desc', project.description);
-    updateElement(content, '#p-img', project.image, true);
-    updateStackTags(content, project.stack);
+    updateElement(content, '#p-count', getCounterText());
     updateGithubLink(content, project.github);
 }
 
-function updateElement(container, selector, value, isImage = false) {
+function updateElement(container, selector, value) {
     const element = container.querySelector(selector);
     if (!element) return;
 
-    element.style.transition = 'none';
-    element.style.animation = 'none';
-    
-    if (isImage) {
-        element.src = value;
-    } else {
-        element.textContent = value;
-    }
-    
-    void element.offsetHeight;
-}
-
-function updateStackTags(container, stack) {
-    const stackContainer = container.querySelector('#p-stack');
-    if (!stackContainer) return;
-
-    stackContainer.innerHTML = generateStackTags(stack);
+    element.textContent = value;
 }
 
 function updateGithubLink(container, githubUrl) {
-    const githubLink = container.querySelector('a[href*="github"]');
+    const githubLink = container.querySelector('#p-github');
     if (!githubLink) return;
-    
+
+    // Projects without a repo URL hide the button instead of linking to '#'
     githubLink.href = githubUrl || '#';
+    githubLink.style.display = githubUrl ? 'flex' : 'none';
 }

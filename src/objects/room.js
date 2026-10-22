@@ -1,58 +1,76 @@
 import * as THREE from 'three';
-import { GLTFLoader } from 'three/examples/jsm/Addons.js';
+import gltfLoader from '../systems/modelLoader';
 
-const gltfLoader = new GLTFLoader();
 const textureLoader = new THREE.TextureLoader();
 
-const room = new Promise((resolve, reject) =>{
-    gltfLoader.load(
-        '/assets/models/cleaned_portfolio_model_3.glb',
-        (gltf) => {
-            const roomScene = gltf.scene;
-            roomScene.position.set(0, 0, 0);
+const BEDSHEETS = ['bedsheets_1', 'bedsheets_2'];
 
-            setupRoomShadows(roomScene);
+// Loads on demand (not at import) so nothing downloads on locked mobile devices
+export default async function loadRoom(onProgress) {
+    const [gltf, normalMap] = await Promise.all([
+        gltfLoader.loadAsync('/assets/models/cleaned_portfolio_model_3.glb', onProgress),
+        textureLoader.loadAsync('/assets/textures/floor_diffuse_v4.png')
+    ]).catch((error) => {
+        console.error("Error loading room model: ", error);
+        throw error;
+    });
 
-            positionPaintings(roomScene);
+    const roomScene = gltf.scene;
+    roomScene.position.set(0, 0, 0);
 
- 
+    setupRoomShadows(roomScene);
+    replaceTransmissiveGlass(roomScene);
 
-            const floorMesh = roomScene.getObjectByName('room_floor');
-            
-            if (floorMesh) {
-                const normalMap = textureLoader.load('../../assets/textures/floor_diffuse_v4.png');
-                
-                normalMap.colorSpace = THREE.NoColorSpace; 
-                normalMap.wrapS = THREE.RepeatWrapping;
-                normalMap.wrapT = THREE.RepeatWrapping;
-                normalMap.minFilter = THREE.LinearMipmapLinearFilter;
-                normalMap.magFilter = THREE.LinearFilter;
-                floorMesh.material.normalMap = normalMap;
-                floorMesh.material.normalMapType = THREE.TangentSpaceNormalMap;
-                
-                floorMesh.material.normalScale.set(0.05, 0.05); 
-                
-                if (!floorMesh.geometry.attributes.tangent) {
-                    console.log("⚠️ Tangents missing on floor. Computing them now...");
-                    floorMesh.geometry.computeTangents();
-                }
+    positionPaintings(roomScene);
 
-                floorMesh.material.needsUpdate = true;
-                
-                console.log("✅ Normal map applied to floor");
-            } else {
-                console.warn("⚠️ Floor floorMesh not found!");
-            }
-            
-            resolve(roomScene);
-        },
-        undefined,
-        (error) => {
-            console.error("Error loading room model: ", error)
-            reject(error);
+    const floorMesh = roomScene.getObjectByName('room_floor');
+
+    if (floorMesh) {
+        normalMap.colorSpace = THREE.NoColorSpace;
+        normalMap.wrapS = THREE.RepeatWrapping;
+        normalMap.wrapT = THREE.RepeatWrapping;
+        normalMap.minFilter = THREE.LinearMipmapLinearFilter;
+        normalMap.magFilter = THREE.LinearFilter;
+        floorMesh.material.normalMap = normalMap;
+        floorMesh.material.normalMapType = THREE.TangentSpaceNormalMap;
+        
+        floorMesh.material.normalScale.set(0.05, 0.05); 
+        
+        if (!floorMesh.geometry.attributes.tangent) {
+            console.log("⚠️ Tangents missing on floor. Computing them now...");
+            floorMesh.geometry.computeTangents();
         }
-    );
-});
+
+        floorMesh.material.needsUpdate = true;
+        
+        console.log("✅ Normal map applied to floor");
+    } else {
+        console.warn("⚠️ Floor floorMesh not found!");
+    }
+
+    return roomScene;
+}
+
+// Transmission makes three.js render the whole scene an extra time every frame;
+// a tinted transparent material looks nearly the same for a thin window pane.
+function replaceTransmissiveGlass(roomScene) {
+    roomScene.traverse((child) => {
+        if (!child.isMesh || !(child.material.transmission > 0)) return;
+
+        const oldMat = child.material;
+        child.material = new THREE.MeshStandardMaterial({
+            color: oldMat.color,
+            roughness: oldMat.roughness,
+            metalness: oldMat.metalness,
+            side: oldMat.side,
+            transparent: true,
+            opacity: 0.2,
+            depthWrite: false
+        });
+        child.material.shadowSide = oldMat.shadowSide;
+        oldMat.dispose();
+    });
+}
 
 function positionPaintings(roomScene) {
     const paintings = ['painting_1', 'painting_frame_1', 'painting_2', 'painting_frame_2'];
@@ -97,12 +115,12 @@ function setupRoomShadows(roomScene) {
                 child.receiveShadow = true;
                 
                 if (child.material) {
-                    child.material.shadowSide = THREE.BackSide;
+                    // The bedsheets are a single double-sided layer in the optimized model
+                    // (the original had separate front and back copies), so they need to
+                    // cast shadows from both sides or light leaks under the bed.
+                    child.material.shadowSide = BEDSHEETS.includes(child.name) ? THREE.DoubleSide : THREE.BackSide;
                 }
             }
         }
     });
 }
-
-
-export default room;

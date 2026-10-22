@@ -1,14 +1,18 @@
 import * as THREE from 'three';
 
-const renderer = new THREE.WebGLRenderer( {antialias: true} );
+// antialias is off: all rendering goes through the composer's render targets
+// (see postprocessing.js), so it only ever applied to the final full-screen pass.
+const renderer = new THREE.WebGLRenderer( {antialias: false} );
 renderer.setSize(window.innerWidth, window.innerHeight);
-renderer.setPixelRatio(window.devicePixelRatio);
-renderer.antialias = true;
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5)); // 4K/Retina screens would otherwise render up to 4x the pixels
 
 renderer.outputColorSpace = THREE.SRGBColorSpace;
 
 renderer.shadowMap.enabled = true;
-renderer.shadowMap.type = THREE.PCFSoftShadowMap; // instead of BasicShadowMap
+renderer.shadowMap.type = THREE.PCFShadowMap; // cheaper filtering than PCFSoft; softness comes from shadow.radius
+// The room is static, so shadow maps are drawn once instead of every frame.
+// Set renderer.shadowMap.needsUpdate = true if a shadow-casting object ever moves.
+renderer.shadowMap.autoUpdate = false;
 
 document.body.appendChild(renderer.domElement);
 

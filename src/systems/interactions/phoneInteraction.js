@@ -11,8 +11,7 @@ const PHONE_VIEW = {
 
 const CONTACT_CONFIG = {
     position: { x: -1.2, y: 3.9, z: -3.8 },
-    rotation: { x: 0, y: Math.PI / 4 + Math.PI - 0.2, z: 0 },
-    scale: 0.001, 
+    scale: 0.001,
     email: "hashir14aziz@gmail.com"
 };
 
@@ -71,7 +70,14 @@ function createContactInterface(scene, camera, controls) {
     const container = createContactContainer();
     state.cssObject = new CSS3DObject(container);
     state.cssObject.position.set(CONTACT_CONFIG.position.x, CONTACT_CONFIG.position.y, CONTACT_CONFIG.position.z);
-    state.cssObject.rotation.set(CONTACT_CONFIG.rotation.x, CONTACT_CONFIG.rotation.y, CONTACT_CONFIG.rotation.z);
+    // Keep the card parallel to the screen in the phone view; the camera looks down at it,
+    // so a fixed upright rotation made it appear tilted away
+    const viewRotation = new THREE.Matrix4().lookAt(
+        new THREE.Vector3().copy(PHONE_VIEW.position),
+        new THREE.Vector3().copy(PHONE_VIEW.target),
+        THREE.Object3D.DEFAULT_UP
+    );
+    state.cssObject.quaternion.setFromRotationMatrix(viewRotation);
     state.cssObject.scale.set(CONTACT_CONFIG.scale, CONTACT_CONFIG.scale, CONTACT_CONFIG.scale);
     scene.add(state.cssObject);
     gsap.to(container, { opacity: 1, duration: ANIMATION_CONFIG.fadeIn });
@@ -154,7 +160,7 @@ function generateProfileHTML() {
             ">
             <div>
                 <h2 style="${getNameStyles()}">Hashir Aziz</h2>
-                <p style="${getSubtitleStyles()}">CS Student | Deep Learning</p>
+                <p style="${getSubtitleStyles()}">CS Student | AI/ML Engineer</p>
             </div>
         </div>
     `;

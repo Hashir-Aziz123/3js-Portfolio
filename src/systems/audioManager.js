@@ -66,6 +66,7 @@ class AudioManager {
         } 
         catch(err){
             console.error("❌ Error loading audio:", err);
+            throw err; // let the loading screen show the error instead of offering Start
         }
     }
 
@@ -126,7 +127,7 @@ class AudioManager {
     // ==================== RAIN & MUSIC ====================
 
     startRainStream() {
-        this.rainStream = new Audio('/assets/audio/heavy-raining-rain-on-tree-natural-clear-sound-abbas-ali-quiet-life-relaxing-music-11938.mp3');
+        this.rainStream = new Audio('/assets/audio/rain-loop.mp3');
         this.rainStream.loop = true;
         this.rainStream.volume = 0; 
         this.rainStream.play().catch(e => console.warn("Rain blocked:", e));

@@ -1,6 +1,6 @@
 # 3D Interactive Portfolio
 
-A fully immersive 3D interactive portfolio experience built with **Three.js**, featuring a carefully crafted room environment with interactive objects and dynamic systems. This project showcases web development skills through creative use of 3D graphics, physics simulation, and modern JavaScript architecture.
+A fully immersive 3D interactive portfolio experience built with **Three.js**, featuring a carefully crafted room environment with interactive objects and dynamic systems. This project showcases web development skills through creative use of 3D graphics and modern JavaScript architecture.
 
 ## 📋 Table of Contents
 - [Overview](#overview)
@@ -16,7 +16,7 @@ A fully immersive 3D interactive portfolio experience built with **Three.js**, f
 
 ## 🎯 Overview
 
-This project combines artistic 3D modeling with interactive web technologies to create an engaging portfolio experience. The scene features a photorealistic room environment with carefully positioned objects, realistic lighting, and smooth animations. Users can interact with various elements like a laptop, phone, printer, and movable car to explore different aspects of the portfolio.
+This project combines artistic 3D modeling with interactive web technologies to create an engaging portfolio experience. The scene features a photorealistic room environment with carefully positioned objects, realistic lighting, and smooth animations. Users can interact with various elements like a laptop, phone, printer, and lamp to explore different aspects of the portfolio.
 
 The project is inspired by the "digital bedroom" concept, creating an intimate and memorable way to showcase work and skills.
 
@@ -32,8 +32,6 @@ The project is inspired by the "digital bedroom" concept, creating an intimate a
 - **Laptop interaction** - Click to trigger actions related to projects or information
 - **Phone event handling** - Interactive mobile device element
 - **Printer interaction** - Functional interaction point for document viewing
-- **Movable toy car** - Physics-based object that can be controlled and navigated
-- **Collision detection system** - Prevents objects from overlapping and falling through surfaces
 
 ### Technical Features
 - **Real-time animation system** for smooth object movement and transitions
@@ -70,7 +68,7 @@ portfolio/
 │   ├── app.js                 # Main application controller
 │   │
 │   ├── objects/               # 3D scene objects
-│   │   ├── car.js             # Interactive car object
+│   │   ├── car.js             # Decorative toy car model
 │   │   ├── room.js            # Room environment object
 │   │   └── testObjects.js     # Test and debug objects
 │   │
@@ -83,8 +81,6 @@ portfolio/
 │   │
 │   ├── systems/               # Application systems
 │   │   ├── animate.js         # Animation loop and frame updates
-│   │   ├── collision.js       # Physics and collision detection
-│   │   ├── events.js          # Global event dispatcher
 │   │   ├── modelLoader.js     # Asset loading utilities
 │   │   └── interactions/      # Object interaction handlers
 │   │       ├── interactionManager.js    # Central interaction hub
@@ -133,14 +129,12 @@ portfolio/
 
 ### Viewing the Scene
 - **Mouse/Trackpad**: Drag to look around or navigate the camera
-- **Keyboard Controls**: Use arrow keys or WASD to move through the scene
 - **Scroll**: Zoom in/out for detailed inspection
 
 ### Interacting with Objects
 - **Laptop**: Click to access project information or links
 - **Phone**: Click to view contact information or messages
 - **Printer**: Click to download documents (CV, etc.)
-- **Car**: Click and drag or use controls to move the car around the scene
 
 ## 🏗 Architecture
 
@@ -154,15 +148,14 @@ The project uses a modular architecture with clear separation of concerns:
 - **Utilities**: `utils/` provides reusable helper functions
 
 ### Event Flow
-1. User interacts with the scene (mouse click, keyboard press)
-2. `events.js` captures and dispatches the event
-3. `interactionManager.js` routes to appropriate handler
-4. Specific interaction file (e.g., `laptopInteraction.js`) executes logic
-5. Scene updates are reflected in real-time
+1. User clicks an object in the scene
+2. `interactionManager.js` raycasts the click and routes it to the registered handler
+3. Specific interaction file (e.g., `laptopInteraction.js`) executes logic
+4. Scene updates are reflected in real-time
 
 ### Animation Loop
 - `animate.js` manages the continuous render loop
-- All frame updates, physics, and animations are synchronized
+- All frame updates and animations are synchronized
 - Targets 60 FPS for smooth visual experience
 
 ## 🎨 Interactive Elements
@@ -180,12 +173,6 @@ The project uses a modular architecture with clear separation of concerns:
 ### Printer
 - Document display and download functionality
 - Can print/download CV or portfolio PDF
-
-### Movable Car
-- Physics-enabled 3D object
-- Collision detection prevents clipping through objects
-- Can be controlled to navigate the room
-- Serves as an interactive element to explore hotspots
 
 ## 👨‍💻 Development
 

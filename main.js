@@ -1,9 +1,9 @@
 import './styles/style.css'
-import { setUpScene } from './src/app'
+import { setUpScene, startScene } from './src/app'
 import audioManager from './src/systems/audioManager';
 
 
-const isMobile = window.innerWidth < 1024; 
+const isMobile = window.innerWidth < 1024;
 
 if (isMobile) {
     console.log("Mobile detected. System locked.");
@@ -12,10 +12,17 @@ if (isMobile) {
     const loaderText = document.getElementById('loader-text');
     const subText = document.getElementById('sub-text');
 
-    audioManager.loadAssets().then(() => {
+    const onProgress = (fraction) => {
+        subText.innerText = fraction < 1
+            ? `loading assets ${Math.round(fraction * 100)}%`
+            : 'preparing scene';
+    };
+
+    // Start is only offered once every asset is loaded and the scene is built and rendered
+    Promise.all([audioManager.loadAssets(), setUpScene(onProgress)]).then(() => {
         console.log("Assets Ready.");
         overlay.classList.add('ready-state');
-        
+
         loaderText.innerHTML = 'Click to Start Experience<span class="cursor">|</span>';
         subText.style.display = 'none';
 
@@ -23,6 +30,7 @@ if (isMobile) {
 
     }).catch(err => {
         loaderText.innerText = "Error Loading";
+        subText.innerText = 'please refresh the page';
         console.error(err);
     });
 }
@@ -30,12 +38,13 @@ if (isMobile) {
 const startExperience = async () => {
     window.removeEventListener('click', startExperience);
     await audioManager.listener.context.resume();
-    
-    const overlay = document.getElementById('overlay'); 
+
+    const overlay = document.getElementById('overlay');
     overlay.style.opacity = '0';
-    
+    overlay.style.pointerEvents = 'none'; // let clicks reach the scene while it fades
+
     audioManager.playMusic();
-    await setUpScene();
+    startScene();
 
     setTimeout(() => {
         overlay.remove();

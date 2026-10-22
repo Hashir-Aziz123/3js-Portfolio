@@ -5,6 +5,8 @@ import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPa
 import { OutputPass } from 'three/examples/jsm/postprocessing/OutputPass.js';
 
 export function createComposer(renderer, scene, camera){
+    // No MSAA: renderer-level antialias never applied to composer passes, and
+    // multisampled targets roughly halved the frame rate on integrated GPUs.
     const composer = new EffectComposer( renderer );
 
     const renderPass = new RenderPass( scene, camera );
