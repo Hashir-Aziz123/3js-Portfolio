@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import gsap from 'gsap';
 import { CSS3DObject } from 'three/examples/jsm/renderers/CSS3DRenderer.js';
 import audioManager  from '../audioManager.js';
-import { transitionCamera } from './cameraTransition.js';
+import { transitionCamera, fitViewToPanel } from './cameraTransition.js';
 
 // Constants
 const PHONE_VIEW = {
@@ -53,7 +53,27 @@ export default function onPhoneClick({ camera, controls, scene }) {
 
 function animateCameraToPhone(camera, controls, onComplete) {
     controls.enabled = false;
-    transitionCamera(camera, controls, PHONE_VIEW, { onComplete });
+    const { width, height } = measureContactCard();
+    const view = fitViewToPanel(PHONE_VIEW, camera, {
+        center: CONTACT_CONFIG.position,
+        width,
+        height,
+        scale: CONTACT_CONFIG.scale
+    });
+    transitionCamera(camera, controls, view, { onComplete });
+}
+
+// The card's height depends on its content, so lay it out once offscreen to measure it
+let cardSize = null;
+function measureContactCard() {
+    if (cardSize) return cardSize;
+
+    const probe = createContactContainer();
+    probe.style.cssText = 'position: absolute; left: -10000px; top: 0; visibility: hidden;';
+    document.body.appendChild(probe);
+    cardSize = { width: probe.offsetWidth, height: probe.offsetHeight };
+    probe.remove();
+    return cardSize;
 }
 
 function animateCameraToNormalMode(camera, controls) {
@@ -75,14 +95,9 @@ function createContactInterface(scene, camera, controls) {
     const container = createContactContainer();
     state.cssObject = new CSS3DObject(container);
     state.cssObject.position.set(CONTACT_CONFIG.position.x, CONTACT_CONFIG.position.y, CONTACT_CONFIG.position.z);
-    // Keep the card parallel to the screen in the phone view; the camera looks down at it,
-    // so a fixed upright rotation made it appear tilted away
-    const viewRotation = new THREE.Matrix4().lookAt(
-        new THREE.Vector3().copy(PHONE_VIEW.position),
-        new THREE.Vector3().copy(PHONE_VIEW.target),
-        THREE.Object3D.DEFAULT_UP
-    );
-    state.cssObject.quaternion.setFromRotationMatrix(viewRotation);
+    // Keep the card parallel to the screen: the camera has just arrived at the phone view
+    // (which is closer on phones, see fitViewToPanel), so match its rotation
+    state.cssObject.quaternion.copy(camera.quaternion);
     state.cssObject.scale.set(CONTACT_CONFIG.scale, CONTACT_CONFIG.scale, CONTACT_CONFIG.scale);
     scene.add(state.cssObject);
     gsap.to(container, { opacity: 1, duration: ANIMATION_CONFIG.fadeIn });
@@ -125,7 +140,6 @@ function getContainerStyles() {
         gap: 50px;
         backface-visibility: hidden;
         pointer-events: auto;
-        transform-style: preserve-3d;
     `;
 }
 
@@ -137,7 +151,6 @@ function generateHeaderHTML() {
             display: flex; 
             justify-content: space-between; 
             align-items: center;
-            transform: translateZ(120px);
         ">
             <span style="
                 font-size: 44px; /* Doubled */
@@ -154,7 +167,6 @@ function generateProfileHTML() {
     return `
         <div style="
             display: flex; gap: 50px; align-items: center;
-            transform: translateZ(120px);
         ">
             <img src="https://github.com/Hashir-Aziz123.png" style="
                 width: 180px; /* Doubled */
@@ -175,7 +187,6 @@ function generateButtonsHTML() {
     return `
         <div style="
             display: flex; flex-direction: column; gap: 28px; margin-top: 10px;
-            transform: translateZ(140px);
         ">
             <a href="https://www.linkedin.com/in/hashir-aziz-aab28b281/" target="_blank" style="text-decoration: none;">
                 <button class="contact-btn" style="${getButtonStyles('linkedin')}">
@@ -215,7 +226,6 @@ function generateFooterHTML() {
             padding: 24px 80px;
             text-transform: uppercase;
             -webkit-font-smoothing: antialiased;
-            transform: translateZ(120px);
         ">CLOSE</button>
     `;
 }

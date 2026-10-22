@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import gsap from 'gsap';
+import { isTouch } from '../../utils/device';
 
 // Shared camera move for the click interactions. Position and target are driven by one
 // tween so they always stay in step, and a move still in progress is cancelled first so
@@ -45,6 +46,50 @@ export function transitionCamera(camera, controls, { position, target }, {
 
     activeTween = tween;
     return tween;
+}
+
+// On phones the focus panels (laptop screen, contact card) come out far too small to read
+// from the desktop camera spots. This moves the camera in along its line of sight until
+// the panel reaches a readable size, without letting it overflow the screen.
+// Desktop framing is left exactly as designed.
+const MIN_PANEL_SCALE = 0.5;           // on-screen CSS px per panel px
+const MAX_FILL = { width: 0.94, height: 0.88 };
+
+// view: { position, target }; panel: { center, width, height, scale, normal? }
+// (width/height in panel px). With a normal (the way the panel faces), the camera moves
+// square in front of the panel; without one it closes in along its current line of sight.
+export function fitViewToPanel(view, camera, panel) {
+    if (!isTouch) return view;
+
+    const position = new THREE.Vector3().copy(view.position);
+    const target = new THREE.Vector3().copy(view.target);
+    const center = new THREE.Vector3().copy(panel.center);
+
+    // How many CSS px one panel px covers from the designed camera spot
+    const distance = position.distanceTo(center);
+    const visibleHeight = 2 * distance * Math.tan(THREE.MathUtils.degToRad(camera.fov) / 2);
+    const currentScale = panel.scale * window.innerHeight / visibleHeight;
+
+    const wantedScale = Math.min(
+        MIN_PANEL_SCALE,
+        MAX_FILL.width * window.innerWidth / panel.width,
+        MAX_FILL.height * window.innerHeight / panel.height
+    );
+
+    const zoom = wantedScale / currentScale;
+    if (zoom <= 1) return view;
+
+    // Aim at the panel's center so the bigger panel sits in the middle of the screen
+    const towardsCamera = position.clone().sub(center).normalize();
+    const direction = panel.normal
+        ? new THREE.Vector3().copy(panel.normal).normalize()
+        : towardsCamera;
+    if (direction.dot(towardsCamera) < 0) direction.negate(); // face the side the camera is on
+
+    return {
+        position: center.clone().addScaledVector(direction, distance / zoom),
+        target: center
+    };
 }
 
 // With enableDamping, OrbitControls keeps easing out the last drag on every update(),

@@ -4,7 +4,8 @@ import { CSS3DObject } from 'three/examples/jsm/renderers/CSS3DRenderer.js';
 import { laptopScreenLight, LAPTOP_LIGHT_ON_INTENSITY } from '../../scene/lights'; 
 import { projects } from './projectsData.js'; 
 import audioManager from '../audioManager';
-import { transitionCamera } from './cameraTransition.js';
+import { transitionCamera, fitViewToPanel } from './cameraTransition.js';
+import { isTouch } from '../../utils/device';
 
 const CAMERA_CONFIG = {
     work: { position: { x: -1.7, y: 4.3, z: 3.6 }, target: { x: -1, y: 4.1, z: 3.94 } }
@@ -17,6 +18,12 @@ const SCREEN_CONFIG = {
     width: 1100,
     height: 695
 };
+
+// Fingers need bigger targets than a mouse; on touch screens the buttons grow and the
+// description shrinks a little so everything still fits the screen
+const SIZES = isTouch
+    ? { description: 28, button: 24, prevPadding: '20px 40px', nextPadding: '20px 44px', exit: 66, github: 22, githubPadding: '20px 30px' }
+    : { description: 30, button: 18, prevPadding: '12px 30px', nextPadding: '12px 35px', exit: 45, github: 18, githubPadding: '12px 24px' };
 
 const state = {
     cssObject: null,
@@ -47,7 +54,20 @@ export default function onPcClick({ camera, controls, scene, cssRenderer }) {
 
 function animateCameraToWorkMode(camera, controls, onComplete) {
     controls.enabled = false;
-    transitionCamera(camera, controls, CAMERA_CONFIG.work, { onComplete });
+    const view = fitViewToPanel(CAMERA_CONFIG.work, camera, {
+        center: SCREEN_CONFIG.position,
+        width: SCREEN_CONFIG.width,
+        height: SCREEN_CONFIG.height,
+        scale: SCREEN_CONFIG.scale,
+        normal: getScreenNormal()
+    });
+    transitionCamera(camera, controls, view, { onComplete });
+}
+
+// The direction the laptop screen faces (a CSS3D panel shows on its +Z side)
+function getScreenNormal() {
+    const { x, y, z } = SCREEN_CONFIG.rotation;
+    return new THREE.Vector3(0, 0, 1).applyEuler(new THREE.Euler(x, y, z));
 }
 
 function animateCameraToNormalMode(camera, controls) {
@@ -212,10 +232,10 @@ function generateGithubLink(project) {
             gap: 10px;
             background: #fe8019;
             color: #1d2021;
-            padding: 12px 24px;
+            padding: ${SIZES.githubPadding};
             border-radius: 6px;
             text-decoration: none;
-            font-size: 18px;
+            font-size: ${SIZES.github}px;
             font-weight: 900;
             letter-spacing: 1px;
             box-shadow: 0 4px 0 #af3a03;
@@ -253,7 +273,7 @@ function getTaglineStyles() {
 function getDescriptionStyles() {
     return `
         font-family: Consolas, Menlo, 'Courier New', monospace;
-        font-size: 30px;
+        font-size: ${SIZES.description}px;
         color: #ebdbb2;
         line-height: 1.6;
         margin: 6px 0 0 0; 
@@ -275,9 +295,9 @@ function getButtonStyles(type) {
             background: #cc241d;
             border: 2px solid #1d2021;
             color: #ebdbb2;
-            font-size: 20px;
-            width: 45px;
-            height: 45px;
+            font-size: ${Math.round(SIZES.exit * 0.45)}px;
+            width: ${SIZES.exit}px;
+            height: ${SIZES.exit}px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -287,15 +307,15 @@ function getButtonStyles(type) {
         prev: `
             background: #3c3836;
             color: #ebdbb2;
-            padding: 12px 30px;
-            font-size: 18px;
+            padding: ${SIZES.prevPadding};
+            font-size: ${SIZES.button}px;
             box-shadow: 0 4px 0 #1d2021;
         `,
         next: `
             background: #fabd2f;
             color: #282828;
-            padding: 12px 35px;
-            font-size: 18px;
+            padding: ${SIZES.nextPadding};
+            font-size: ${SIZES.button}px;
             font-weight: 900;
             box-shadow: 0 4px 0px #d79921;
         `

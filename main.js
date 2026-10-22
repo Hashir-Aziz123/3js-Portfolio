@@ -1,45 +1,39 @@
 import './styles/style.css'
 import { setUpScene, startScene } from './src/app'
 import audioManager from './src/systems/audioManager';
+// Phones and tablets; in portrait they see a rotate prompt (styles/style.css) while this loads
+import { isTouch } from './src/utils/device';
 
+const overlay = document.getElementById('overlay');
+const loaderText = document.getElementById('loader-text');
+const subText = document.getElementById('sub-text');
 
-const isMobile = window.innerWidth < 1024;
+const onProgress = (fraction) => {
+    subText.innerText = fraction < 1
+        ? `loading assets ${Math.round(fraction * 100)}%`
+        : 'preparing scene';
+};
 
-if (isMobile) {
-    console.log("Mobile detected. System locked.");
-} else {
-    const overlay = document.getElementById('overlay');
-    const loaderText = document.getElementById('loader-text');
-    const subText = document.getElementById('sub-text');
+// Start is only offered once every asset is loaded and the scene is built and rendered
+Promise.all([audioManager.loadAssets(), setUpScene(onProgress)]).then(() => {
+    console.log("Assets Ready.");
+    overlay.classList.add('ready-state');
 
-    const onProgress = (fraction) => {
-        subText.innerText = fraction < 1
-            ? `loading assets ${Math.round(fraction * 100)}%`
-            : 'preparing scene';
-    };
+    loaderText.innerHTML = `${isTouch ? 'Tap' : 'Click'} to Start Experience<span class="cursor">|</span>`;
+    subText.style.display = 'none';
 
-    // Start is only offered once every asset is loaded and the scene is built and rendered
-    Promise.all([audioManager.loadAssets(), setUpScene(onProgress)]).then(() => {
-        console.log("Assets Ready.");
-        overlay.classList.add('ready-state');
+    window.addEventListener('click', startExperience);
 
-        loaderText.innerHTML = 'Click to Start Experience<span class="cursor">|</span>';
-        subText.style.display = 'none';
-
-        window.addEventListener('click', startExperience);
-
-    }).catch(err => {
-        loaderText.innerText = "Error Loading";
-        subText.innerText = 'please refresh the page';
-        console.error(err);
-    });
-}
+}).catch(err => {
+    loaderText.innerText = "Error Loading";
+    subText.innerText = 'please refresh the page';
+    console.error(err);
+});
 
 const startExperience = async () => {
     window.removeEventListener('click', startExperience);
     await audioManager.listener.context.resume();
 
-    const overlay = document.getElementById('overlay');
     overlay.style.opacity = '0';
     overlay.style.pointerEvents = 'none'; // let clicks reach the scene while it fades
 

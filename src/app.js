@@ -126,32 +126,40 @@ export async function setUpScene(onProgress = () => {}) {
     // Setting up interactions
     const interaction = new InteractionManager(scene, camera, renderer.domElement);
 
+    // Objects only respond while the user is free to look around. Controls are off during
+    // camera moves and while a panel is open, and the panels' close buttons act on
+    // pointerdown, so the rest of that tap lands on the scene behind and would otherwise
+    // reopen whatever is under the button.
+    const whenFree = (handler) => () => {
+        if (controls.enabled) handler();
+    };
+
     const printerGroup = createGroup(roomModel, "printer", [
         "printer_body", "printer_screen", "printer_buttons", "printer_tray"
     ]);
     if (printerGroup) {
-        interaction.register(printerGroup.name, () => onPrinterClick({ scene, camera, controls }));
+        interaction.register(printerGroup.name, whenFree(() => onPrinterClick({ scene, camera, controls })));
     } 
 
     const phoneGroup = createGroup(roomModel, "phone", [
         "telephone_body", "telephone_miscellaneous", "telephone_receiver",
     ]);
     if (phoneGroup) {
-        interaction.register(phoneGroup.name, () =>  onPhoneClick({ camera, controls, scene }));
+        interaction.register(phoneGroup.name, whenFree(() => onPhoneClick({ camera, controls, scene })));
     } 
 
     const laptopGroup = createGroup(roomModel, "laptop", [
         "laptop",
     ]);
     if (laptopGroup) {
-        interaction.register(laptopGroup.name, () => onPcClick({ camera, controls, scene, cssRenderer }));
+        interaction.register(laptopGroup.name, whenFree(() => onPcClick({ camera, controls, scene, cssRenderer })));
     } 
 
     const lampGroup = createGroup(roomModel, "lamp_structure", [
     "lamp_paper_body", "lamp_frame"
     ]);
     if (lampGroup) {
-        interaction.register(lampGroup.name, () => onLampClick({ scene }));
+        interaction.register(lampGroup.name, whenFree(() => onLampClick({ scene })));
     }
 
     // Audio setup

@@ -207,13 +207,13 @@ The project uses a modular architecture with clear separation of concerns:
 ## 📝 Notes
 
 - This project is optimized for modern browsers with WebGL support
-- Best viewed on desktop with a mouse/trackpad for full interaction
+- Works on desktop and on phones/tablets in landscape (portrait shows a prompt to rotate)
 - The scene is designed for single-user exploration
 - Audio files are included for potential interaction feedback
 
 ## 🔧 Future Enhancements
 
-- [ ] Mobile responsiveness and touch controls
+- [x] Mobile responsiveness and touch controls (landscape)
 - [ ] Sound effects for interactions
 - [ ] Animation transitions between states
 - [ ] Additional interactive objects
