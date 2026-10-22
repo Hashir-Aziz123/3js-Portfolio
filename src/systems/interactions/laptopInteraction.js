@@ -3,12 +3,11 @@ import gsap from 'gsap';
 import { CSS3DObject } from 'three/examples/jsm/renderers/CSS3DRenderer.js';
 import { laptopScreenLight, LAPTOP_LIGHT_ON_INTENSITY } from '../../scene/lights'; 
 import { projects } from './projectsData.js'; 
-import audioManager from '../audioManager'; 
+import audioManager from '../audioManager';
+import { transitionCamera } from './cameraTransition.js';
 
 const CAMERA_CONFIG = {
-    work: { position: { x: -1.7, y: 4.3, z: 3.6 }, target: { x: -1, y: 4.1, z: 3.94 } },
-    duration: 1.5,
-    ease: "power2.inOut"
+    work: { position: { x: -1.7, y: 4.3, z: 3.6 }, target: { x: -1, y: 4.1, z: 3.94 } }
 };
 
 const SCREEN_CONFIG = {
@@ -48,36 +47,19 @@ export default function onPcClick({ camera, controls, scene, cssRenderer }) {
 
 function animateCameraToWorkMode(camera, controls, onComplete) {
     controls.enabled = false;
-
-    gsap.to(camera.position, { 
-        ...CAMERA_CONFIG.work.position,
-        duration: CAMERA_CONFIG.duration, 
-        ease: CAMERA_CONFIG.ease
-    });
-    
-    gsap.to(controls.target, { 
-        ...CAMERA_CONFIG.work.target,
-        duration: CAMERA_CONFIG.duration, 
-        ease: CAMERA_CONFIG.ease,
-        onUpdate: () => controls.update(),
-        onComplete
-    });
+    transitionCamera(camera, controls, CAMERA_CONFIG.work, { onComplete });
 }
 
 function animateCameraToNormalMode(camera, controls) {
-    if (!state.initialCameraState) return;
+    if (!state.initialCameraState) {
+        controls.enabled = true;
+        return;
+    }
 
-    gsap.to(camera.position, { 
-        ...state.initialCameraState.position, 
-        duration: 1.2, 
-        ease: "power2.inOut" 
-    });
-    
-    gsap.to(controls.target, { 
-        ...state.initialCameraState.target, 
-        duration: 1.2, 
-        ease: "power2.inOut", 
-        onUpdate: () => controls.update() 
+    // Controls stay off until the camera is back, so a drag can't fight the move
+    transitionCamera(camera, controls, state.initialCameraState, {
+        duration: 1.6,
+        onComplete: () => { controls.enabled = true; }
     });
 }
 
@@ -366,7 +348,6 @@ function handleExitWorkMode(scene, camera, controls, anchorMesh) {
 
     scene.remove(state.cssObject);
     state.cssObject = null;
-    controls.enabled = true;
     removeWorkModeEffects(anchorMesh);
     animateCameraToNormalMode(camera, controls);
 }

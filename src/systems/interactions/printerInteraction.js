@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import gsap from 'gsap';
 import audioManager from '../audioManager';
+import { transitionCamera } from './cameraTransition.js';
 
 // ==================== CONFIGURATION ====================
 const PAPER_CONFIG = {
@@ -49,18 +50,7 @@ export default function onPrinterClick({ scene, camera, controls }) {
     const tl = gsap.timeline();
 
     // 1. Camera Swoop
-    tl.to(camera.position, {
-        ...CAMERA_VIEW.position,
-        duration: 1.2,
-        ease: "power2.inOut"
-    }, "start");
-
-    tl.to(controls.target, {
-        ...CAMERA_VIEW.target,
-        duration: 1.2,
-        ease: "power2.inOut",
-        onUpdate: () => controls.update()
-    }, "start");
+    tl.add(transitionCamera(camera, controls, CAMERA_VIEW, { duration: 1.6 }), "start");
 
     // 2. Paper Eject
     const targetPos = { ...PAPER_CONFIG.initialPosition };
@@ -141,21 +131,16 @@ function createPaper(scene) {
 }
 
 function resetSystem(camera, controls, mesh) {
-    gsap.to(camera.position, {
-        ...initialCameraState.position,
-        duration: 1.5,
-        ease: "power2.inOut"
-    });
+    const finish = () => {
+        controls.enabled = true;
+        isPrinting = false;
+    };
 
-    gsap.to(controls.target, {
-        ...initialCameraState.target,
-        duration: 1.5,
-        ease: "power2.inOut",
-        onUpdate: () => controls.update(),
-        onComplete: () => {
-            controls.enabled = true;
-            isPrinting = false;
-        }
+    // Also finish if another click takes over the camera, or the printer would stay locked
+    transitionCamera(camera, controls, initialCameraState, {
+        duration: 1.6,
+        onComplete: finish,
+        onInterrupt: () => { isPrinting = false; }
     });
 
     setTimeout(() => {

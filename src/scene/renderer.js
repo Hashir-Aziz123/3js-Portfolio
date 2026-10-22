@@ -8,6 +8,12 @@ renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5)); // 4K/Retina scr
 
 renderer.outputColorSpace = THREE.SRGBColorSpace;
 
+// Linear tone mapping just scales the final image by the exposure, so this brightens
+// the whole scene evenly without changing the balance between the lights.
+// The OutputPass in postprocessing.js applies it.
+renderer.toneMapping = THREE.LinearToneMapping;
+renderer.toneMappingExposure = 1.15;
+
 renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = THREE.PCFShadowMap; // cheaper filtering than PCFSoft; softness comes from shadow.radius
 // The room is static, so shadow maps are drawn once instead of every frame.

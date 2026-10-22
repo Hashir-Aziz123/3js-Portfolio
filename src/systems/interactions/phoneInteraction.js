@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import gsap from 'gsap';
 import { CSS3DObject } from 'three/examples/jsm/renderers/CSS3DRenderer.js';
 import audioManager  from '../audioManager.js';
+import { transitionCamera } from './cameraTransition.js';
 
 // Constants
 const PHONE_VIEW = {
@@ -16,8 +17,6 @@ const CONTACT_CONFIG = {
 };
 
 const ANIMATION_CONFIG = {
-    duration: 1.5,
-    ease: "power2.inOut",
     fadeIn: 0.5
 };
 
@@ -54,14 +53,20 @@ export default function onPhoneClick({ camera, controls, scene }) {
 
 function animateCameraToPhone(camera, controls, onComplete) {
     controls.enabled = false;
-    gsap.to(camera.position, { ...PHONE_VIEW.position, duration: ANIMATION_CONFIG.duration, ease: ANIMATION_CONFIG.ease });
-    gsap.to(controls.target, { ...PHONE_VIEW.target, duration: ANIMATION_CONFIG.duration, ease: ANIMATION_CONFIG.ease, onUpdate: () => controls.update(), onComplete });
+    transitionCamera(camera, controls, PHONE_VIEW, { onComplete });
 }
 
 function animateCameraToNormalMode(camera, controls) {
-    if (!state.initialCameraState) return;
-    gsap.to(camera.position, { ...state.initialCameraState.position, duration: ANIMATION_CONFIG.duration, ease: ANIMATION_CONFIG.ease });
-    gsap.to(controls.target, { ...state.initialCameraState.target, duration: ANIMATION_CONFIG.duration, ease: ANIMATION_CONFIG.ease, onUpdate: () => controls.update() });
+    if (!state.initialCameraState) {
+        controls.enabled = true;
+        return;
+    }
+
+    // Controls stay off until the camera is back, so a drag can't fight the move
+    transitionCamera(camera, controls, state.initialCameraState, {
+        duration: 1.6,
+        onComplete: () => { controls.enabled = true; }
+    });
 }
 
 
@@ -311,6 +316,5 @@ function handleDisconnect(scene, camera, controls) {
     if (!state.cssObject) return;
     scene.remove(state.cssObject);
     state.cssObject = null;
-    controls.enabled = true;
     animateCameraToNormalMode(camera, controls);
 }

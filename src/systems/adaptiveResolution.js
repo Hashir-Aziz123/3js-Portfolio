@@ -1,7 +1,10 @@
 // Lowers the render resolution on GPUs that can't hold a smooth frame rate
 // (mostly integrated laptop graphics). Only ever steps down, so it can't oscillate.
 
-const TARGET_FPS = 40;
+import { MAX_FPS } from './animate';
+
+// Rendering is capped at MAX_FPS, so step down only when the GPU can't keep up with the cap
+const TARGET_FPS = MAX_FPS * 0.9;
 const MIN_PIXEL_RATIO = 0.75;
 const STEP = 0.25;
 const SAMPLE_SECONDS = 2;
