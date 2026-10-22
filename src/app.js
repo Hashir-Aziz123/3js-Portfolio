@@ -18,6 +18,8 @@ import { createAdaptiveResolution } from './systems/adaptiveResolution';
 // Interactions
 import { createGroup } from './utils/createGroup';           
 import InteractionManager from './systems/interactions/interactionManager';
+import { createMarkers } from './systems/interactions/markers';
+import { createHighlighter } from './systems/interactions/highlight';
 
 import onPrinterClick from './systems/interactions/printerInteraction.js';
 import onPhoneClick from './systems/interactions/phoneInteraction';
@@ -43,6 +45,12 @@ export async function setUpScene(onProgress = () => {}) {
     controls.update();
 
     controls.enableDamping = true;
+    controls.enableRotate = false; // the view stays put; only clicking objects moves the camera
+
+    // Scroll / pinch zoom is limited to 20% closer or further than the starting view
+    const homeDistance = camera.position.distanceTo(controls.target);
+    controls.minDistance = homeDistance * 0.8;
+    controls.maxDistance = homeDistance * 1.2;
     controls.enabled = false; // enabled by startScene() once the overlay is dismissed
 
     window.addEventListener('keydown', (e) => {
@@ -137,30 +145,41 @@ export async function setUpScene(onProgress = () => {}) {
     const printerGroup = createGroup(roomModel, "printer", [
         "printer_body", "printer_screen", "printer_buttons", "printer_tray"
     ]);
-    if (printerGroup) {
-        interaction.register(printerGroup.name, whenFree(() => onPrinterClick({ scene, camera, controls })));
-    } 
-
     const phoneGroup = createGroup(roomModel, "phone", [
         "telephone_body", "telephone_miscellaneous", "telephone_receiver",
     ]);
-    if (phoneGroup) {
-        interaction.register(phoneGroup.name, whenFree(() => onPhoneClick({ camera, controls, scene })));
-    } 
-
     const laptopGroup = createGroup(roomModel, "laptop", [
         "laptop",
     ]);
-    if (laptopGroup) {
-        interaction.register(laptopGroup.name, whenFree(() => onPcClick({ camera, controls, scene, cssRenderer })));
-    } 
-
     const lampGroup = createGroup(roomModel, "lamp_structure", [
     "lamp_paper_body", "lamp_frame"
     ]);
-    if (lampGroup) {
-        interaction.register(lampGroup.name, whenFree(() => onLampClick({ scene })));
-    }
+
+    // Opening an object (by clicking it or its marker) also dims its marker
+    const open = (group, handler) => whenFree(() => {
+        markers.markVisited(group);
+        handler();
+    });
+    const openPrinter = open(printerGroup, () => onPrinterClick({ scene, camera, controls }));
+    const openPhone = open(phoneGroup, () => onPhoneClick({ camera, controls, scene }));
+    const openLaptop = open(laptopGroup, () => onPcClick({ camera, controls, scene, cssRenderer }));
+
+    if (printerGroup) interaction.register(printerGroup.name, openPrinter);
+    if (phoneGroup) interaction.register(phoneGroup.name, openPhone);
+    if (laptopGroup) interaction.register(laptopGroup.name, openLaptop);
+    if (lampGroup) interaction.register(lampGroup.name, whenFree(() => onLampClick({ scene })));
+
+    // Showing what can be clicked: labelled markers for the main three, and on desktop a
+    // warm highlight plus a hand cursor when hovering any of them (the lamp included)
+    scene.updateMatrixWorld();
+    const markers = createMarkers(camera, [
+        { object: laptopGroup, label: 'Projects', onClick: openLaptop },
+        { object: phoneGroup, label: 'Contact', onClick: openPhone, nudge: { x: -10, y: -4 } },
+        { object: printerGroup, label: 'Resume', onClick: openPrinter },
+    ].filter((entry) => entry.object));
+
+    const highlighter = createHighlighter([laptopGroup, phoneGroup, printerGroup, lampGroup].filter(Boolean));
+    interaction.enableHover();
 
     // Audio setup
     audioManager.setupCameraListener(camera);
@@ -182,6 +201,7 @@ export async function setUpScene(onProgress = () => {}) {
     // Compiling shaders up front avoids a freeze on the first visible frame.
     renderer.shadowMap.needsUpdate = true;
     await renderer.compileAsync(scene, camera);
+    highlighter.hideAll();
 
     const updateResolution = createAdaptiveResolution(renderer, composer);
 
@@ -192,6 +212,12 @@ export async function setUpScene(onProgress = () => {}) {
             if (rainGroup.userData.tick) rainGroup.userData.tick(delta);
             
             cssRenderer.render(scene, camera);
+
+            // Markers and hover feedback only while the user is free to pick an object
+            const hovered = controls.enabled ? (markers.hovered ?? interaction.hovered) : null;
+            highlighter.set(hovered);
+            renderer.domElement.style.cursor = hovered ? 'pointer' : '';
+            markers.update(controls.enabled);
 
             // Only judge frame rate once the user is in the scene, not while loading
             if (isStarted) updateResolution(delta);

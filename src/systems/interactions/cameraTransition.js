@@ -21,6 +21,7 @@ export function transitionCamera(camera, controls, { position, target }, {
 } = {}) {
     activeTween?.kill();
     stopControlsMomentum(controls);
+    liftZoomLimits(controls);
 
     const fromPosition = camera.position.clone();
     const fromTarget = controls.target.clone();
@@ -39,6 +40,7 @@ export function transitionCamera(camera, controls, { position, target }, {
         },
         onComplete: () => {
             if (activeTween === tween) activeTween = null;
+            restoreZoomLimits(controls);
             onComplete?.();
         },
         onInterrupt
@@ -90,6 +92,29 @@ export function fitViewToPanel(view, camera, panel) {
         position: center.clone().addScaledVector(direction, distance / zoom),
         target: center
     };
+}
+
+// The zoom limits (min/maxDistance, set in app.js) are for the room view, but OrbitControls
+// enforces them on every update, which would yank the close-up views back out. They're
+// lifted while the camera moves and put back once it lands inside them again (back home).
+let zoomLimits = null;
+
+function liftZoomLimits(controls) {
+    if (!zoomLimits) zoomLimits = { min: controls.minDistance, max: controls.maxDistance };
+    controls.minDistance = 0;
+    controls.maxDistance = Infinity;
+}
+
+function restoreZoomLimits(controls) {
+    if (!zoomLimits) return;
+
+    const distance = controls.object.position.distanceTo(controls.target);
+    const EPSILON = 1e-6;
+    if (distance < zoomLimits.min - EPSILON || distance > zoomLimits.max + EPSILON) return;
+
+    controls.minDistance = zoomLimits.min;
+    controls.maxDistance = zoomLimits.max;
+    zoomLimits = null;
 }
 
 // With enableDamping, OrbitControls keeps easing out the last drag on every update(),

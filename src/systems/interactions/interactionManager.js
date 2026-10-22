@@ -37,6 +37,21 @@ export default class InteractionManager {
     console.log(`[InteractionManager] Registered "${objectName}" for clicks`);
   }
 
+  // Tracks which registered object is under the mouse in this.hovered (null if none).
+  // Mouse only: touch has no hover.
+  enableHover() {
+    this.hovered = null;
+    this.pendingMove = null;
+
+    this.handlePointerMove = this.handlePointerMove.bind(this);
+    this.handlePointerLeave = () => {
+      this.hovered = null;
+      this.pendingMove = null;
+    };
+    this.domElement.addEventListener('pointermove', this.handlePointerMove, { passive: true });
+    this.domElement.addEventListener('pointerleave', this.handlePointerLeave, { passive: true });
+  }
+
   unregister(objectName) {
     const sceneObject = this.findObjectInScene(objectName);
     if (sceneObject) {
@@ -46,6 +61,10 @@ export default class InteractionManager {
 
   dispose() {
     this.domElement.removeEventListener('click', this.handleClick);
+    if (this.handlePointerMove) {
+      this.domElement.removeEventListener('pointermove', this.handlePointerMove);
+      this.domElement.removeEventListener('pointerleave', this.handlePointerLeave);
+    }
     this.interactiveObjects.clear();
   }
 
@@ -59,6 +78,26 @@ export default class InteractionManager {
     if (clickedObject) {
       this.executeClickHandler(clickedObject, event);
     }
+  }
+
+  handlePointerMove(event) {
+    if (event.pointerType !== 'mouse') return;
+
+    // Raycast at most once per frame, with the latest position, however fast the mouse moves
+    if (!this.pendingMove) {
+      requestAnimationFrame(() => {
+        const latest = this.pendingMove;
+        this.pendingMove = null;
+        if (!latest) return; // the mouse left the canvas in the meantime
+
+        this.updateMousePosition(latest);
+        this.castRayFromMouse();
+
+        const hit = this.findClickedInteractiveObject();
+        this.hovered = hit ? hit.registeredObject : null;
+      });
+    }
+    this.pendingMove = event;
   }
 
   updateMousePosition(event) {

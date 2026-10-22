@@ -128,7 +128,7 @@ portfolio/
 ## 🎮 Usage
 
 ### Viewing the Scene
-- **Mouse/Trackpad**: Drag to look around or navigate the camera
+- **Mouse/Trackpad**: Click objects to focus on them; the view doesn't rotate
 - **Scroll**: Zoom in/out for detailed inspection
 
 ### Interacting with Objects

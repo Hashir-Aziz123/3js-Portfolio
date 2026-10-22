@@ -158,3 +158,77 @@ canvas {
         display: flex;
     }
 }
+
+/* INTERACTION MARKERS: pulsing labels above the laptop, phone and printer (markers.js) */
+#markers {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 10;
+    transition: opacity 0.3s ease;
+}
+
+#markers.hidden {
+    opacity: 0;
+}
+
+.marker {
+    position: absolute;
+    left: 0;
+    top: 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 5px 12px 5px 8px;
+    border: 1px solid rgba(250, 189, 47, 0.35);
+    border-radius: 999px;
+    background: rgba(29, 32, 33, 0.72);
+    font-family: 'Courier New', monospace;
+    cursor: pointer;
+    pointer-events: auto;
+    transition: border-color 0.2s ease, opacity 0.3s ease;
+}
+
+#markers.hidden .marker {
+    pointer-events: none;
+}
+
+.marker:hover {
+    border-color: rgba(250, 189, 47, 0.8);
+}
+
+.marker-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: #fabd2f;
+    animation: marker-pulse 2s ease-out infinite;
+}
+
+.marker-label {
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: #ebdbb2;
+}
+
+.marker:hover .marker-label {
+    color: #fabd2f;
+}
+
+/* Already opened: stop calling for attention */
+.marker.visited {
+    opacity: 0.55;
+}
+
+.marker.visited .marker-dot {
+    animation: none;
+    background: #a89984;
+}
+
+@keyframes marker-pulse {
+    0% { box-shadow: 0 0 0 0 rgba(250, 189, 47, 0.7); }
+    70% { box-shadow: 0 0 0 8px rgba(250, 189, 47, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(250, 189, 47, 0); }
+}
